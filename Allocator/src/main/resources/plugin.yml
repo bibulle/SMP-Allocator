@@ -1,0 +1,12 @@
+name: Allocator
+main: com.em.allocator.Allocator
+version: 0.1
+commands:
+ allocator:
+  description: Defines an allocator.
+  usage: Unknown command. Type "help" for help.
+  aliases: al
+permissions:
+ allocator.create:
+  description: Grants the ability to use /allocate.
+  default: op
