@@ -7,9 +7,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
@@ -18,7 +20,7 @@ public class ChestTrap extends JavaPlugin {
 	ChestTrapListener thelistener = new ChestTrapListener(this);
 
 	// Properties
-	Map<Location, String> chestMap = new HashMap<Location, String>();
+	Map<Location, ItemChestTrapItem> chestMap = new HashMap<Location, ItemChestTrapItem>();
 
 	// Constant
 	Material BLOCK_TYPE = Material.CHEST;
@@ -30,7 +32,7 @@ public class ChestTrap extends JavaPlugin {
 		// Contruct the datas
 		Map<String, String> chestMapS = new HashMap<String, String>();
 		for (Location l : this.chestMap.keySet()) {
-			chestMapS.put(convertLocation(l), this.chestMap.get(l));
+			chestMapS.put(convertLocation(l), "");
 		}
 		String chests = new Yaml().dump(chestMapS);
 
@@ -49,7 +51,13 @@ public class ChestTrap extends JavaPlugin {
 		HashMap<String, String> chestMapS = (HashMap<String, String>) new Yaml().loadAs(getConfig().getString("data", "{}"), HashMap.class);
 		for (String s : chestMapS.keySet()) {
 			Location l = convertString(s);
-			this.chestMap.put(l, "YES");
+			
+			BlockState blockState = l.getBlock().getState();
+			if (blockState instanceof InventoryHolder) {
+				InventoryHolder ih = (InventoryHolder) blockState;
+			
+			this.chestMap.put(l, new ItemChestTrapItem(ih.getInventory()));
+			}
 		}
 
 		getLogger().info(chestMap.size() + " chests");
@@ -67,11 +75,17 @@ public class ChestTrap extends JavaPlugin {
 				return true;
 			}
 			if (this.chestMap.containsKey(block.getLocation())) {
-				sender.sendMessage(ChatColor.RED + "That " + BLOCK_TYPE.toString().toLowerCase() + " is already an allocator ! (filter : " + this.chestMap.get(block.getLocation()) + ")");
+				sender.sendMessage(ChatColor.RED + "That " + BLOCK_TYPE.toString().toLowerCase() + " is already an chest !");
 				return true;
 			}
 
-			this.chestMap.put(block.getLocation(), "YES");
+			BlockState blockState = block.getState();
+			if (blockState instanceof InventoryHolder) {
+				InventoryHolder ih = (InventoryHolder) blockState;
+			
+				this.chestMap.put(block.getLocation(), new ItemChestTrapItem(ih.getInventory()));
+			}
+
 			sender.sendMessage(ChatColor.GREEN + "Chest added ! (" + block.getLocation() + ")");
 		} catch (ClassCastException e) {
 			sender.sendMessage("You can only use this command as a player!");
