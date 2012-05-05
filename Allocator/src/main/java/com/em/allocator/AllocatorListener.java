@@ -65,6 +65,7 @@ public class AllocatorListener implements Listener {
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
 		// if it's a Allocator
 		if (this.thePlugin.allocatorMap.containsKey(event.getBlock().getLocation())) {
+			//System.out.println("================== BlockRedstoneEvent");
 			// Just do the job
 			AllocatorBlock al = this.thePlugin.allocatorMap.get(event.getBlock().getLocation());
 			if ((al.power == 0) && (event.getNewCurrent() > 0)) {
@@ -132,9 +133,9 @@ public class AllocatorListener implements Listener {
 			// Output-Container
 		} else {
 			if (outputContainer instanceof Furnace) {
-				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer);
+				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer, inputContainer, thePlugin);
 			} else {
-				AllocatorOutput.outputItemToContainer(inputItems, outputContainer);
+				AllocatorOutput.outputItemToContainer(inputItems, outputContainer, inputContainer, thePlugin);
 			}
 		}
 

@@ -45,6 +45,7 @@ public class ChestTrap extends JavaPlugin {
 	}
 
 	public void onEnable() {
+		
 		getServer().getPluginManager().registerEvents(this.thelistener, this);
 
 		@SuppressWarnings("unchecked")
@@ -61,10 +62,11 @@ public class ChestTrap extends JavaPlugin {
 		}
 
 		getLogger().info(chestMap.size() + " chests");
+		getLogger().info(getDescription().getCommands().toString());
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		if (!sender.hasPermission("chests.create")) {
+		if (!sender.hasPermission("chesttrap.create")) {
 			return false;
 		}
 		try {

@@ -3,16 +3,20 @@ package com.em.allocator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Item;
+import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.em.allocator.item.ItemAllocatable;
+import com.em.chesttrap.MyInventoryModifiedEvent;
 
 public class AllocatorOutput {
 
@@ -72,8 +76,9 @@ public class AllocatorOutput {
 	 * 
 	 * @param inputItems
 	 * @param outputContainer
+	 * @param thePlugin 
 	 */
-	public static void outputItemToContainer(List<ItemAllocatable> inputItems, InventoryHolder outputContainer) {
+	public static void outputItemToContainer(List<ItemAllocatable> inputItems, InventoryHolder outputContainer, InventoryHolder inputContainer, Allocator thePlugin) {
 
 		for (ItemAllocatable itemAllocatable : inputItems) {
 
@@ -119,6 +124,15 @@ public class AllocatorOutput {
 			}
 
 		}
+		
+		final MyInventoryModifiedEvent newInputEvent = new MyInventoryModifiedEvent(inputContainer.getInventory());
+		final MyInventoryModifiedEvent newOutputEvent = new MyInventoryModifiedEvent(outputContainer.getInventory());
+		thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(thePlugin, new Runnable() {
+			public void run() {
+				Bukkit.getServer().getPluginManager().callEvent(newInputEvent);
+				Bukkit.getServer().getPluginManager().callEvent(newOutputEvent);
+			}
+		}, 1L);
 	}
 
 	/**
@@ -127,7 +141,7 @@ public class AllocatorOutput {
 	 * @param inputItems
 	 * @param outputContainer
 	 */
-	public static void outputItemToFurnace(List<ItemAllocatable> inputItems, Furnace outputContainer) {
+	public static void outputItemToFurnace(List<ItemAllocatable> inputItems, Furnace outputContainer, InventoryHolder inputContainer, Allocator thePlugin) {
 
 		for (ItemAllocatable itemAllocatable : inputItems) {
 
@@ -181,6 +195,14 @@ public class AllocatorOutput {
 			}
 		}
 
+		final MyInventoryModifiedEvent newInputEvent = new MyInventoryModifiedEvent(inputContainer.getInventory());
+		final MyInventoryModifiedEvent newOutputEvent = new MyInventoryModifiedEvent(outputContainer.getInventory());
+		thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(thePlugin, new Runnable() {
+			public void run() {
+				Bukkit.getServer().getPluginManager().callEvent(newInputEvent);
+				Bukkit.getServer().getPluginManager().callEvent(newOutputEvent);
+			}
+		}, 1L);
 	}
 
 	/**

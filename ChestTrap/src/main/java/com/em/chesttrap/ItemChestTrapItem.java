@@ -22,6 +22,9 @@ public class ItemChestTrapItem {
 	public ItemChestTrapItem(Inventory inventory) {
 
 		for (ItemStack itemStack : inventory) {
+			if (itemStack == null) {
+				continue;
+			}
 			Material material = itemStack.getType();
 			int amount = itemStack.getAmount();
 
@@ -56,11 +59,15 @@ public class ItemChestTrapItem {
 		
 		for (Material material : newChest.getInventoryContent().keySet()) {
 			if (newChest.getAmount(material) != this.getAmount(material)) {
+				//System.out.println(material+" "+this.getAmount(material)+"->"+newChest.getAmount(material));
+				setInventoryContent(newChest.getInventoryContent());
 				return true;
 			}
 		}
 		for (Material material : this.getInventoryContent().keySet()) {
 			if (newChest.getAmount(material) != this.getAmount(material)) {
+				//System.out.println(material+" "+this.getAmount(material)+"->"+newChest.getAmount(material));
+				setInventoryContent(newChest.getInventoryContent());
 				return true;
 			}
 		}

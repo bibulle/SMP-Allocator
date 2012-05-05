@@ -2,9 +2,9 @@ name: ChestTrap
 main: com.em.chesttrap.ChestTrap
 version: 0.1
 commands:
- allocator:
+ chesttrap:
   description: Defines an Chest Trap.
-  usage: Unknown command. Type "help" for help.
+  usage: You have no permission to use it
   aliases: ct
 permissions:
  chesttrap.create:

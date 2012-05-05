@@ -45,20 +45,30 @@ public class ChestTrapListener implements Listener {
 		}
 	}
 
+	// /**
+	// * On redstone change of a block
+	// **/
+	// @EventHandler
+	// public void onInventoryEvent(FurnaceSmeltEvent event) {
+	//
+	// System.out.println(event.getEventName() + " " + event.getBlock());
+	// }
+	
+	
 	/**
-	 * On redstone change of a block
-	 **/
-	@EventHandler
-	public void onInventoryEvent(FurnaceSmeltEvent event) {
-
-		System.out.println(event.getEventName() + " " + event.getBlock());
-	}
-
-	/**
-	 * On redstone change of a block
+	 * On Inventory close
 	 **/
 	@EventHandler
 	public void onInventoryEvent(InventoryCloseEvent event) {
+//		System.out.println("================== InventoryCloseEvent");
+		onInventoryEvent(new MyInventoryModifiedEvent(event.getInventory()));
+	}
+	
+	/**
+	 * On Inventory close
+	 **/
+	@EventHandler
+	public void onInventoryEvent(MyInventoryModifiedEvent event) {
 
 		InventoryHolder ih = event.getInventory().getHolder();
 		if (ih instanceof Chest) {
@@ -72,6 +82,8 @@ public class ChestTrapListener implements Listener {
 			}
 
 			if (this.thePlugin.chestMap.get(b.getLocation()).changeInventory(event.getInventory())) {
+				//System.out.println("================== MyInventoryModifiedEvent");
+
 				// Inventory change, set on power !!!!
 				List<Block> array = new ArrayList<Block>();
 				array.add(b.getRelative(BlockFace.NORTH));
@@ -108,24 +120,17 @@ public class ChestTrapListener implements Listener {
 					}
 				}
 			}
-
-			// Call the event
-
-			// Now you do the event
-			// Bukkit.getServer().broadcastMessage(event.getMessage());
-
-			System.out.println(event.getEventName() + " " + chest.getBlock());
 		}
 	}
 
 	/**
-	 * On redstone change of a block
+	 * On inventory open
 	 **/
-	@EventHandler
-	public void onInventoryEvent(InventoryOpenEvent event) {
-
-		System.out.println(event.getEventName() + " " + event.getInventory());
-	}
+	// @EventHandler
+	// public void onInventoryEvent(InventoryOpenEvent event) {
+	//
+	// System.out.println(event.getEventName() + " " + event.getInventory());
+	// }
 	/**
 	 * On redstone change of a block
 	 **/
