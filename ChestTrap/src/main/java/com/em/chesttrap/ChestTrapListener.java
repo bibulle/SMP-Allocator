@@ -110,9 +110,11 @@ public class ChestTrapListener implements Listener {
 					if (block.getType() == Material.REDSTONE_WIRE) {
 
 						// I find no other way... change it to torch
+						block.setTypeId(0);
 						block.setType(Material.REDSTONE_TORCH_ON);
 						this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
 							public void run() {
+								blockf.setTypeId(0);
 								blockf.setType(Material.REDSTONE_WIRE);
 							}
 						}, 6L);

@@ -18,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.util.Vector;
 
@@ -112,7 +113,7 @@ public class AllocatorListener implements Listener {
 		InventoryHolder inputContainer = getContainer(b, dx, dy, dz);
 
 		// No Input-Container (get dropped items)
-		if (inputContainer == null) {
+		if ((inputContainer == null) || (inputContainer.getInventory() == null)) {
 			Location inputLocation = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
 			inputItems = AllocatorInput.getRandomItemFromDropped(b.getWorld(), inputLocation, filter, thePlugin);
 
@@ -134,7 +135,7 @@ public class AllocatorListener implements Listener {
 		} else {
 			if (outputContainer instanceof Furnace) {
 				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer, inputContainer, thePlugin);
-			} else {
+			} else if (outputContainer.getInventory() != null){
 				AllocatorOutput.outputItemToContainer(inputItems, outputContainer, inputContainer, thePlugin);
 			}
 		}
@@ -159,7 +160,8 @@ public class AllocatorListener implements Listener {
 		InventoryHolder container = null;
 
 		// get container :chest, ...
-		BlockState craftB = b.getRelative(dx, dy, dz).getState();
+		Block target = b.getRelative(dx, dy, dz);
+		BlockState craftB = target.getState();
 		if (craftB instanceof InventoryHolder) {
 			container = (InventoryHolder) craftB;
 		} else {
@@ -173,6 +175,17 @@ public class AllocatorListener implements Listener {
 				container = (StorageMinecart) e;
 			}
 			a.remove();
+		}
+		
+		// avoid dropping to rail
+		if (container == null) {
+			if ((target.getType() == Material.RAILS) || (target.getType() == Material.DETECTOR_RAIL) || (target.getType() == Material.POWERED_RAIL)) {
+				container = new InventoryHolder() {
+					public Inventory getInventory() {
+						return null;
+					}
+				};
+			}
 		}
 
 		return container;
