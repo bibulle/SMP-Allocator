@@ -125,12 +125,20 @@ public class AllocatorOutput {
 
 		}
 		
-		final MyInventoryModifiedEvent newInputEvent = new MyInventoryModifiedEvent(inputContainer.getInventory());
-		final MyInventoryModifiedEvent newOutputEvent = new MyInventoryModifiedEvent(outputContainer.getInventory());
+		sendInventoryEvent(outputContainer, inputContainer, thePlugin);
+	}
+
+	private static void sendInventoryEvent(InventoryHolder outputContainer, InventoryHolder inputContainer, Allocator thePlugin) {
+		final InventoryHolder inputContainerf = inputContainer;
+		final InventoryHolder outputContainerf = outputContainer;
 		thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(thePlugin, new Runnable() {
 			public void run() {
-				Bukkit.getServer().getPluginManager().callEvent(newInputEvent);
-				Bukkit.getServer().getPluginManager().callEvent(newOutputEvent);
+				if (inputContainerf != null) {
+					Bukkit.getServer().getPluginManager().callEvent(new MyInventoryModifiedEvent(inputContainerf.getInventory()));
+				}
+				if (outputContainerf != null) {
+					Bukkit.getServer().getPluginManager().callEvent(new MyInventoryModifiedEvent(outputContainerf.getInventory()));
+				}
 			}
 		}, 1L);
 	}
@@ -195,14 +203,7 @@ public class AllocatorOutput {
 			}
 		}
 
-		final MyInventoryModifiedEvent newInputEvent = new MyInventoryModifiedEvent(inputContainer.getInventory());
-		final MyInventoryModifiedEvent newOutputEvent = new MyInventoryModifiedEvent(outputContainer.getInventory());
-		thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(thePlugin, new Runnable() {
-			public void run() {
-				Bukkit.getServer().getPluginManager().callEvent(newInputEvent);
-				Bukkit.getServer().getPluginManager().callEvent(newOutputEvent);
-			}
-		}, 1L);
+		sendInventoryEvent(outputContainer, inputContainer, thePlugin);
 	}
 
 	/**

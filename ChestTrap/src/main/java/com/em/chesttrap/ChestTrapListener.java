@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -53,36 +54,57 @@ public class ChestTrapListener implements Listener {
 	//
 	// System.out.println(event.getEventName() + " " + event.getBlock());
 	// }
-	
-	
+
 	/**
 	 * On Inventory close
 	 **/
 	@EventHandler
 	public void onInventoryEvent(InventoryCloseEvent event) {
-//		System.out.println("================== InventoryCloseEvent");
+		// System.out.println("================== InventoryCloseEvent");
 		onInventoryEvent(new MyInventoryModifiedEvent(event.getInventory()));
 	}
-	
+
 	/**
 	 * On Inventory close
 	 **/
 	@EventHandler
 	public void onInventoryEvent(MyInventoryModifiedEvent event) {
+		// System.out.println("================== MyInventoryModifiedEvent 1");
 
+		if (event.getInventory() == null) {
+			return;
+		}
+
+		//System.out.println("================== MyInventoryModifiedEvent 2");
 		InventoryHolder ih = event.getInventory().getHolder();
+		//System.out.println("================== MyInventoryModifiedEvent 2 " + ih);
+
+		if (ih instanceof DoubleChest) {
+			DoubleChest doubleChest = (DoubleChest) ih;
+			eventReceivedOnChest(event, doubleChest.getRightSide());
+			eventReceivedOnChest(event, doubleChest.getLeftSide());
+		} else {
+			eventReceivedOnChest(event, ih);
+		}
+	}
+
+	/**
+	 * We just managed the event on a Chest (twice if it's a double chest
+	 * @param event the event
+	 * @param ih the single chast
+	 */
+	private void eventReceivedOnChest(MyInventoryModifiedEvent event, InventoryHolder ih) {
+		Chest chest = null;
 		if (ih instanceof Chest) {
-			Chest chest = (Chest) ih;
-
+			chest = (Chest) ih;
+		}
+		if (chest != null) {
 			Block b = chest.getBlock();
-
-			// if it's a ChestTrap
-			if (!this.thePlugin.chestMap.containsKey(b.getLocation())) {
-				return;
-			}
-
-			if (this.thePlugin.chestMap.get(b.getLocation()).changeInventory(event.getInventory())) {
-				//System.out.println("================== MyInventoryModifiedEvent");
+			
+			boolean changed = this.thePlugin.chestMap.containsKey(b.getLocation()) && this.thePlugin.chestMap.get(b.getLocation()).changeInventory(event.getInventory());
+			//System.out.println("================== MyInventoryModifiedEvent 4");
+			if (changed) {
+				//System.out.println("================== MyInventoryModifiedEvent 5");
 
 				// Inventory change, set on power !!!!
 				List<Block> array = new ArrayList<Block>();
@@ -97,14 +119,20 @@ public class ChestTrapListener implements Listener {
 					final Block blockf = block;
 
 					// Send an event (for others mod)
-					BlockRedstoneEvent newEvent = new BlockRedstoneEvent(block, 0, 15);
-					Bukkit.getServer().getPluginManager().callEvent(newEvent);
+					//BlockRedstoneEvent newEvent = new BlockRedstoneEvent(block, 0, 15);
+					//Bukkit.getServer().getPluginManager().callEvent(newEvent);
+					this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
+						public void run() {
+							BlockRedstoneEvent newEvent = new BlockRedstoneEvent(blockf, 0, 15);
+							Bukkit.getServer().getPluginManager().callEvent(newEvent);
+						}
+					}, 5L);
 					this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
 						public void run() {
 							BlockRedstoneEvent newEvent = new BlockRedstoneEvent(blockf, 15, 0);
 							Bukkit.getServer().getPluginManager().callEvent(newEvent);
 						}
-					}, 6L);
+					}, 8L);
 
 					// if it's a REDSTONE_WIRE, set power
 					if (block.getType() == Material.REDSTONE_WIRE) {

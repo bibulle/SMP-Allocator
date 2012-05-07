@@ -66,11 +66,12 @@ public class AllocatorListener implements Listener {
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
 		// if it's a Allocator
 		if (this.thePlugin.allocatorMap.containsKey(event.getBlock().getLocation())) {
-			//System.out.println("================== BlockRedstoneEvent");
+			//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ());
 			// Just do the job
 			AllocatorBlock al = this.thePlugin.allocatorMap.get(event.getBlock().getLocation());
 			if ((al.power == 0) && (event.getNewCurrent() > 0)) {
 
+				//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ()+" -> "+event.getNewCurrent());
 				// it is powered
 				//Bukkit.getLogger().info("Powered !! " + al);
 

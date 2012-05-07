@@ -86,11 +86,19 @@ public class Allocator extends JavaPlugin {
 			}
 
 			// create a new Block
-			BlockFace face = BlockFace.NORTH;
-			if ((args.length != 0) && (BlockFace.valueOf(args[0]) != null)) {
-				face = BlockFace.valueOf(args[0]);
-			} else if (block.getState().getData() instanceof Directional) {
+			BlockFace face = null;
+			if (args.length != 0) {
+				try {
+					face = BlockFace.valueOf(args[0].toUpperCase());
+				} catch (IllegalArgumentException e) {
+					sender.sendMessage(ChatColor.RED + "Unknown parameter : " + args[0].toUpperCase());
+				}
+			}
+			if ((face == null) && (block.getState().getData() instanceof Directional)) {
 				face = getFace(block);
+			}
+			if (face == null) {
+				face = BlockFace.NORTH;
 			}
 			
 			AllocatorBlock al = new AllocatorBlock(block, filter, face);
