@@ -29,9 +29,10 @@ public class AllocatorOutput {
 	 * @param inputItems
 	 * @param world
 	 * @param outputLocation
+	 * @param al
 	 * @param thePlugin
 	 */
-	public static void outputItemToDropped(List<ItemAllocatable> inputItems, World world, Location outputLocation, Allocator thePlugin) {
+	public static void outputItemToDropped(List<ItemAllocatable> inputItems, World world, Location outputLocation, AllocatorBlock al, Allocator thePlugin) {
 
 		// System.out.println("+++ " + inputItems);
 		// for (Iterator iterator = inputItems.iterator(); iterator.hasNext();) {
@@ -39,7 +40,6 @@ public class AllocatorOutput {
 		// System.out.println("+++    " +
 		// itemAllocatable.getType()+" "+itemAllocatable.getAmount());
 		// }
-
 
 		// the counter to limit dropped
 		List<ItemStack> stackDropped = new ArrayList<ItemStack>();
@@ -99,10 +99,11 @@ public class AllocatorOutput {
 				}
 			}
 		}
-		
+
 		if (isOneItemAllocated) {
 			// Smoke
 			world.playEffect(outputLocation, Effect.SMOKE, 0);
+			al.getLocation().getWorld().playEffect(al.getLocation(), Effect.CLICK1, 0);
 		}
 
 	}
@@ -114,10 +115,12 @@ public class AllocatorOutput {
 	 * @param outputContainer
 	 * @param thePlugin
 	 */
-	public static void outputItemToContainer(List<ItemAllocatable> inputItems, InventoryHolder outputContainer, InventoryHolder inputContainer, Allocator thePlugin) {
+	public static void outputItemToContainer(List<ItemAllocatable> inputItems, InventoryHolder outputContainer, InventoryHolder inputContainer, AllocatorBlock al, Allocator thePlugin) {
 
 		// the counter to limit dropped
 		List<ItemStack> stackDropped = new ArrayList<ItemStack>();
+		// List to get already refused material (to go faster)
+		List<Material> materialAlreadyRefused = new ArrayList<Material>();
 
 		boolean isOneItemAllocated = false;
 
@@ -158,6 +161,13 @@ public class AllocatorOutput {
 				}
 				// not existing stack... create a new
 				if (!stacked) {
+
+					// check if there is empty stack to prepare for other filter
+					if (checkIfMaterialRefused(itemAllocatable, outputContainer, al, materialAlreadyRefused)) {
+						continue;
+					}
+
+					// add the stack
 					ItemStack item = itemAllocatable.getTheItemStack().clone();
 					item.setAmount(1);
 
@@ -186,6 +196,151 @@ public class AllocatorOutput {
 
 		if (isOneItemAllocated) {
 			sendInventoryEvent(outputContainer, inputContainer, thePlugin);
+			al.getLocation().getWorld().playEffect(al.getLocation(), Effect.CLICK1, 0);
+		}
+	}
+
+	/**
+	 * Check if there is enough place foreach filtered item
+	 * 
+	 * @param itemAllocatable
+	 * @param outputContainer
+	 * @param al
+	 * @param materialAlreadyRefused
+	 * @return
+	 */
+	private static boolean checkIfMaterialRefused(ItemAllocatable itemAllocatable, InventoryHolder outputContainer, AllocatorBlock al, List<Material> materialAlreadyRefused) {
+		// check if there is empty stack to prepare for other filter
+
+		// if already refused, refuse it
+		if (materialAlreadyRefused.contains(itemAllocatable.getType())) {
+			return true;
+		}
+		// System.out.println("----" + al.hasNoFilter()+" "+
+		// al.getFilters().size());
+		if (!al.hasNoFilter() && (al.getFilters().size() != 1)) {
+			List<Material> filters = new ArrayList<Material>();
+			for (Material material : al.getFilters()) {
+				filters.add(material);
+			}
+			int empty = 0;
+			// System.out.println(filters);
+			// Search for each stack in the directories (a filter or an empty
+			// stack)
+			for (int i = 0; (i < outputContainer.getInventory().getContents().length) && (empty <= filters.size()); i++) {
+				// System.out.println(empty +" "+filters);
+				ItemStack anItemStack = outputContainer.getInventory().getContents()[i];
+				if (anItemStack == null) {
+					empty++;
+				} else {
+					if (filters.contains(anItemStack.getType())) {
+						filters.remove(anItemStack.getType());
+					}
+				}
+			}
+			// System.out.println("##"+empty +" "+filters);
+			// If there is no enough empty stack, do not transfer
+			if ((empty < filters.size()) || ((empty == filters.size()) && !filters.contains(itemAllocatable.getType()))) {
+				materialAlreadyRefused.add(itemAllocatable.getType());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Just add Item to inventory
+	 * 
+	 * @param inputItems
+	 * @param outputContainer
+	 */
+	public static void outputItemToFurnace(List<ItemAllocatable> inputItems, Furnace outputContainer, InventoryHolder inputContainer, AllocatorBlock al, Allocator thePlugin) {
+
+		// the counter to limit dropped
+		List<ItemStack> stackDropped = new ArrayList<ItemStack>();
+
+		boolean isOneItemAllocated = false;
+
+		for (ItemAllocatable itemAllocatable : inputItems) {
+			// for each item in the Stack
+			int itemAllocatableAmount = itemAllocatable.getAmount();
+			for (int j = 0; j < itemAllocatableAmount; j++) {
+
+				// try to stack or add
+				boolean stacked = false;
+				ItemStack[] stacks = outputContainer.getInventory().getContents();
+				for (int i = 0; i < stacks.length; i++) {
+					ItemStack is = stacks[i];
+					if (is == null) {
+						continue;
+					}
+					// if there is a not full stack add it
+					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
+						// limit to count (via config)
+						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
+						if (canBeDropped) {
+
+							// really added it to the target (and remove it from the input)
+							isOneItemAllocated = true;
+							int newSize = is.getAmount() + 1;
+							is.setAmount(newSize);
+							if (newSize == is.getAmount()) {
+								// Bukkit.getLogger().info(" Item added " + is);
+								itemAllocatable.remove();
+							} else {
+								// Bukkit.getLogger().info(" Item not added " + is);
+							}
+						}
+						stacked = true;
+						break;
+					}
+				}
+				// not existing stack... create a new
+				if (!stacked) {
+					ItemStack item = itemAllocatable.getTheItemStack().clone();
+					item.setAmount(1);
+
+					// if it's fuel
+					if (isFuel(itemAllocatable.getTheItemStack()) && (outputContainer.getInventory().getFuel() == null)) {
+						// limit to count (via config)
+						boolean canBeDropped = limitDropCount(item, stackDropped, thePlugin);
+						if (canBeDropped) {
+
+							// really added it to the target (and remove it from the input)
+							isOneItemAllocated = true;
+							outputContainer.getInventory().setFuel(item);
+							if (outputContainer.getInventory().contains(item)) {
+								// Bukkit.getLogger().info(" Item added " + item);
+								itemAllocatable.remove();
+							} else {
+								// Bukkit.getLogger().info(" Item not added " + item);
+							}
+						}
+					} else if (outputContainer.getInventory().getSmelting() == null) {
+						// limit to count (via config)
+						boolean canBeDropped = limitDropCount(item, stackDropped, thePlugin);
+						if (canBeDropped) {
+
+							// really added it to the target (and remove it from the input)
+							isOneItemAllocated = true;
+							outputContainer.getInventory().setSmelting(item);
+							if (outputContainer.getInventory().contains(item)) {
+								// Bukkit.getLogger().info(" Item added " + item);
+								itemAllocatable.remove();
+							} else {
+								// Bukkit.getLogger().info(" Item not added " + item);
+							}
+						}
+					} else {
+						// Bukkit.getLogger().info(" Item not added " + item);
+					}
+				}
+			}
+		}
+
+		if (isOneItemAllocated) {
+			sendInventoryEvent(outputContainer, inputContainer, thePlugin);
+			al.getLocation().getWorld().playEffect(al.getLocation(), Effect.CLICK1, 0);
 		}
 	}
 
@@ -247,69 +402,6 @@ public class AllocatorOutput {
 				}
 			}
 		}, 1L);
-	}
-
-	/**
-	 * Just add Item to inventory
-	 * 
-	 * @param inputItems
-	 * @param outputContainer
-	 */
-	public static void outputItemToFurnace(List<ItemAllocatable> inputItems, Furnace outputContainer, InventoryHolder inputContainer, Allocator thePlugin) {
-
-		for (ItemAllocatable itemAllocatable : inputItems) {
-
-			// try to stack or add
-			boolean stacked = false;
-			ItemStack[] stacks = outputContainer.getInventory().getContents();
-			for (int i = 0; i < stacks.length; i++) {
-				ItemStack is = stacks[i];
-				if (is == null) {
-					continue;
-				}
-				// if there is a not full stack add it
-				if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
-					int newSize = is.getAmount() + 1;
-					is.setAmount(newSize);
-					if (newSize == is.getAmount()) {
-						// Bukkit.getLogger().info(" Item added " + is);
-						itemAllocatable.remove();
-					} else {
-						// Bukkit.getLogger().info(" Item not added " + is);
-					}
-					stacked = true;
-					break;
-				}
-			}
-			// not existing stack... create a new
-			if (!stacked) {
-				ItemStack item = itemAllocatable.getTheItemStack().clone();
-				item.setAmount(1);
-
-				// if it's fuel
-				if (isFuel(itemAllocatable.getTheItemStack()) && (outputContainer.getInventory().getFuel() == null)) {
-					outputContainer.getInventory().setFuel(item);
-					if (outputContainer.getInventory().contains(item)) {
-						// Bukkit.getLogger().info(" Item added " + item);
-						itemAllocatable.remove();
-					} else {
-						// Bukkit.getLogger().info(" Item not added " + item);
-					}
-				} else if (outputContainer.getInventory().getSmelting() == null) {
-					outputContainer.getInventory().setSmelting(item);
-					if (outputContainer.getInventory().contains(item)) {
-						// Bukkit.getLogger().info(" Item added " + item);
-						itemAllocatable.remove();
-					} else {
-						// Bukkit.getLogger().info(" Item not added " + item);
-					}
-				} else {
-					// Bukkit.getLogger().info(" Item not added " + item);
-				}
-			}
-		}
-
-		sendInventoryEvent(outputContainer, inputContainer, thePlugin);
 	}
 
 	/**

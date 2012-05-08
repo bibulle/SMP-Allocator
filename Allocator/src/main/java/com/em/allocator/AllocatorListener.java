@@ -131,14 +131,14 @@ public class AllocatorListener implements Listener {
 		// No Output-Container (get dropped items)
 		if (outputContainer == null) {
 			Location outputLocation = b.getLocation().add(0.5D - dx, 0.5D - dy, 0.5D - dz);
-			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation, thePlugin);
+			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation, al, thePlugin);
 
 			// Output-Container
 		} else {
 			if (outputContainer instanceof Furnace) {
-				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer, inputContainer, thePlugin);
+				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer, inputContainer, al, thePlugin);
 			} else if (outputContainer.getInventory() != null){
-				AllocatorOutput.outputItemToContainer(inputItems, outputContainer, inputContainer, thePlugin);
+				AllocatorOutput.outputItemToContainer(inputItems, outputContainer, inputContainer, al, thePlugin);
 			}
 		}
 
