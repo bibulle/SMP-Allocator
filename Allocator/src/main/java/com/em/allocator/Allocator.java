@@ -99,11 +99,11 @@ public class Allocator extends JavaPlugin {
 						player.sendMessage(ChatColor.RED + "Either that's not a " + BLOCK_TYPE.toString().toLowerCase() + ", you're too far away, or there's a non-full block in the way.");
 						return true;
 					}
-					
+
 					// Create a new Allocator
 					AllocatorBlock al = setNewAllocator(block, args, player);
 					player.sendMessage(ChatColor.GREEN + "Allocator added ! (" + al + ")");
-					
+
 					return true;
 				}
 				// Set an Allocator
@@ -112,11 +112,11 @@ public class Allocator extends JavaPlugin {
 						player.sendMessage(ChatColor.RED + "This " + block.getType().toString().toLowerCase() + " is not an allocator");
 						return true;
 					}
-					
+
 					// Change the Allocator
 					AllocatorBlock al = setNewAllocator(block, args, player);
 					player.sendMessage(ChatColor.GREEN + "Allocator modified ! (" + al + ")");
-					
+
 					return true;
 				}
 			}
@@ -131,20 +131,24 @@ public class Allocator extends JavaPlugin {
 
 	/**
 	 * Create a new Allocator and put it into the table
-	 * @param block the targeted block
-	 * @param args the command args (the first one is the sub command set, add, ..)
-	 * @param player the palyer
+	 * 
+	 * @param block
+	 *          the targeted block
+	 * @param args
+	 *          the command args (the first one is the sub command set, add, ..)
+	 * @param player
+	 *          the player
 	 * @return the new created Allocator
 	 */
 	private AllocatorBlock setNewAllocator(Block block, String[] args, Player player) {
 		Material filter = player.getItemInHand().getType();
 		BlockFace face = BlockFace.NORTH;
-		
+
 		// get the block facing
 		if (block.getState().getData() instanceof Directional) {
-			face = getFace(block);
+			face = AllocatorBlock.getFace(block);
 		}
-		
+
 		// get the parametres
 		for (int i = 1; i < args.length; i++) {
 			try {
@@ -161,34 +165,6 @@ public class Allocator extends JavaPlugin {
 		AllocatorBlock al = new AllocatorBlock(block, filter, face);
 		this.allocatorMap.put(block.getLocation(), al);
 		return al;
-	}
-
-	/**
-	 * Get face from Block (it's strange to redefine it...)
-	 * 
-	 * @param block
-	 * @return
-	 */
-	private BlockFace getFace(Block block) {
-		BlockFace face;
-		switch (block.getData()) {
-		case 0:
-		default:
-			face = BlockFace.SOUTH;
-			break;
-		case 1:
-			face = BlockFace.WEST;
-			break;
-		case 2:
-			face = BlockFace.NORTH;
-			break;
-		case 3:
-			face = BlockFace.EAST;
-			break;
-
-		}
-		// face = ((Directional) block.getState().getData()).getFacing();
-		return face;
 	}
 
 	void usage(CommandSender sender) {
