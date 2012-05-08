@@ -70,48 +70,102 @@ public class Allocator extends JavaPlugin {
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if (!sender.hasPermission("allocator.create")) {
-			return false;
+			sender.sendMessage(ChatColor.RED + "You have no permission to use this command !!");
+			return true;
 		}
+
 		try {
 			Player player = (Player) sender;
 			Block block = player.getTargetBlock(null, 5);
-			Material filter = player.getItemInHand().getType();
-			if (!block.getType().equals(BLOCK_TYPE)) {
-				sender.sendMessage(ChatColor.RED + "Either that's not a " + BLOCK_TYPE.toString().toLowerCase() + ", you're too far away, or there's a non-full block in the way.");
-				return true;
-			}
-			if (this.allocatorMap.containsKey(block.getLocation())) {
-				sender.sendMessage(ChatColor.RED + "That " + BLOCK_TYPE.toString().toLowerCase() + " is already an allocator ! (filter : " + this.allocatorMap.get(block.getLocation()) + ")");
-				return true;
-			}
 
-			// create a new Block
-			BlockFace face = null;
 			if (args.length != 0) {
-				try {
-					face = BlockFace.valueOf(args[0].toUpperCase());
-				} catch (IllegalArgumentException e) {
-					sender.sendMessage(ChatColor.RED + "Unknown parameter : " + args[0].toUpperCase());
+				// Get info on an Allocator
+				if (args[0].equalsIgnoreCase("info")) {
+					if (this.allocatorMap.containsKey(block.getLocation())) {
+						player.sendMessage(ChatColor.GREEN + "Allocator (" + this.allocatorMap.get(block.getLocation()) + ")");
+						return true;
+					} else {
+						player.sendMessage(ChatColor.RED + "This " + block.getType().toString().toLowerCase() + " is not an allocator");
+						return true;
+					}
+				}
+				// Add an Allocator
+				if (args[0].equalsIgnoreCase("add")) {
+					if (this.allocatorMap.containsKey(block.getLocation())) {
+						player.sendMessage(ChatColor.RED + "This " + block.getType().toString().toLowerCase() + " is allready an allocator (" + this.allocatorMap.get(block.getLocation()) + ")");
+						return true;
+					}
+					if (!block.getType().equals(BLOCK_TYPE)) {
+						player.sendMessage(ChatColor.RED + "Either that's not a " + BLOCK_TYPE.toString().toLowerCase() + ", you're too far away, or there's a non-full block in the way.");
+						return true;
+					}
+					
+					// Create a new Allocator
+					AllocatorBlock al = setNewAllocator(block, args, player);
+					player.sendMessage(ChatColor.GREEN + "Allocator added ! (" + al + ")");
+					
+					return true;
+				}
+				// Set an Allocator
+				if (args[0].equalsIgnoreCase("set")) {
+					if (!this.allocatorMap.containsKey(block.getLocation())) {
+						player.sendMessage(ChatColor.RED + "This " + block.getType().toString().toLowerCase() + " is not an allocator");
+						return true;
+					}
+					
+					// Change the Allocator
+					AllocatorBlock al = setNewAllocator(block, args, player);
+					player.sendMessage(ChatColor.GREEN + "Allocator modified ! (" + al + ")");
+					
+					return true;
 				}
 			}
-			if ((face == null) && (block.getState().getData() instanceof Directional)) {
-				face = getFace(block);
-			}
-			if (face == null) {
-				face = BlockFace.NORTH;
-			}
-			
-			AllocatorBlock al = new AllocatorBlock(block, filter, face);
-			this.allocatorMap.put(block.getLocation(), al);
-			sender.sendMessage(ChatColor.GREEN + "Allocator added ! (" + al + ")");
 		} catch (ClassCastException e) {
 			sender.sendMessage("You can only use this command as a player!");
+			return true;
 		}
+
+		usage(sender);
 		return true;
 	}
 
 	/**
+	 * Create a new Allocator and put it into the table
+	 * @param block the targeted block
+	 * @param args the command args (the first one is the sub command set, add, ..)
+	 * @param player the palyer
+	 * @return the new created Allocator
+	 */
+	private AllocatorBlock setNewAllocator(Block block, String[] args, Player player) {
+		Material filter = player.getItemInHand().getType();
+		BlockFace face = BlockFace.NORTH;
+		
+		// get the block facing
+		if (block.getState().getData() instanceof Directional) {
+			face = getFace(block);
+		}
+		
+		// get the parametres
+		for (int i = 1; i < args.length; i++) {
+			try {
+				face = BlockFace.valueOf(args[i].toUpperCase());
+			} catch (IllegalArgumentException e1) {
+				try {
+					filter = Material.valueOf(args[i].toUpperCase());
+				} catch (IllegalArgumentException e2) {
+					player.sendMessage(ChatColor.RED + "Unknown parameter : " + args[i].toUpperCase());
+				}
+			}
+		}
+
+		AllocatorBlock al = new AllocatorBlock(block, filter, face);
+		this.allocatorMap.put(block.getLocation(), al);
+		return al;
+	}
+
+	/**
 	 * Get face from Block (it's strange to redefine it...)
+	 * 
 	 * @param block
 	 * @return
 	 */
@@ -133,8 +187,31 @@ public class Allocator extends JavaPlugin {
 			break;
 
 		}
-		//face = ((Directional) block.getState().getData()).getFacing();
+		// face = ((Directional) block.getState().getData()).getFacing();
 		return face;
+	}
+
+	void usage(CommandSender sender) {
+		// |----------------------------------------------------------------|
+		// |Command usage :
+		// | /allocator add [filters] [direction] :
+		// | Add an allocator on the pointed pumpkins
+		// | ex : /allocator add Cobblestone Dirt Up
+		// | /allocator set [filters] [direction] :
+		// | Change settings on the pointed allocator
+		// | ex : /allocator set Cobblestone Dirt Up
+		// | /allocator info :
+		// | Get infos (settings) on the pointed allocator
+		// |----------------------------------------------------------------|
+		sender.sendMessage(ChatColor.WHITE + "Command usage :");
+		sender.sendMessage(ChatColor.GOLD + " /allocator add [filters] [direction]" + ChatColor.WHITE + " : ");
+		sender.sendMessage(ChatColor.WHITE + "          Add an allocator on the pointed " + BLOCK_TYPE.toString().toLowerCase());
+		sender.sendMessage(ChatColor.WHITE + "          ex : " + ChatColor.ITALIC + "/allocator add Cobblestone Dirt Up");
+		sender.sendMessage(ChatColor.GOLD + " /allocator set [filters] [direction]" + ChatColor.WHITE + " :");
+		sender.sendMessage(ChatColor.WHITE + "          Change settings on the pointed allocator");
+		sender.sendMessage(ChatColor.WHITE + "          ex : " + ChatColor.ITALIC + "/allocator set Cobblestone Dirt Up");
+		sender.sendMessage(ChatColor.GOLD + " /allocator info" + ChatColor.WHITE + " :");
+		sender.sendMessage(ChatColor.WHITE + "          Get infos (settings) on the pointed allocator");
 	}
 
 	String convertLocation(Location l) {

@@ -21,7 +21,11 @@ public class AllocatorBlock {
 
 	@Override
 	public String toString() {
-		return "AllocatorBlock (filter : " + filter + ", facing : " + face + ")";
+		String ret = "No filter";
+		if (!filter.equals(Material.AIR)) {
+			ret = "filter : " + filter;
+		}
+		return ret + ", facing : " + face;
 	}
 
 	public String paramToText() {
