@@ -1,46 +1,144 @@
 package com.em.allocator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.material.Directional;
-import org.bukkit.material.MaterialData;
+import org.bukkit.inventory.ItemStack;
 
 public class AllocatorBlock {
 
-	Location location;
-	Material filter;
-	BlockFace face;
-	int power;
+	private Location location;
+	public int getPower() {
+		return power;
+	}
 
-	public AllocatorBlock(Block block, Material filter, BlockFace face) {
+	public void setPower(int power) {
+		this.power = power;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public List<Material> getFilters() {
+		return filters;
+	}
+
+	public BlockFace getFace() {
+		return face;
+	}
+
+	private List<Material> filters;
+	private BlockFace face;
+	private int power;
+
+	/**
+	 * Create a new Allocator
+	 * 
+	 * @param block
+	 *          the block
+	 * @param filters
+	 *          the filters
+	 * @param face
+	 *          the face
+	 */
+	public AllocatorBlock(Block block, List<Material> filters, BlockFace face) {
 		this.location = block.getLocation();
 		this.power = block.getBlockPower();
-		this.filter = filter;
-		this.face = face;
 
+		if (filters == null) {
+			filters = new ArrayList<Material>();
+		}
+		while ((filters.size() != 1) && filters.contains(Material.AIR)) {
+			filters.remove(Material.AIR);
+		}
+		this.filters = filters;
+
+		this.face = face;
 		setFace(block, face);
 
+	}
+
+	public boolean hasNoFilter() {
+		boolean ret = filters.isEmpty();
+
+		ret = ret || ((filters.size() == 1) && filters.contains(Material.AIR));
+
+		return ret;
+	}
+
+	/**
+	 * Translate Filters to YAML String
+	 * 
+	 * @return
+	 */
+	public String filtersToString() {
+		if (hasNoFilter()) {
+			return "" + Material.AIR;
+		} else {
+			String ret = "";
+			for (Material m : filters) {
+				if (ret.length() == 0) {
+					ret += m;
+				} else {
+					ret += "|" + m;
+				}
+
+			}
+			return ret;
+		}
+	}
+
+	/**
+	 * Translate Filters from String
+	 * 
+	 * @return
+	 */
+	public static List<Material> filtersFromString(String filtersS) {
+		
+		List<Material> ret = new ArrayList<Material>();
+		
+		String[] filtersArray = filtersS.split("[|]");
+		for (String string : filtersArray) {
+			ret.add(Material.valueOf(string));
+		}
+
+		return ret;
+	}
+
+	/**
+	 * Get this as YAML string
+	 * 
+	 * @return
+	 */
+	public String paramToText() {
+		return filtersToString() + "," + face;
+	}
+
+	/**
+	 * Get this from an YAML string
+	 * 
+	 * @return
+	 */
+	public static AllocatorBlock fromBlockAndParamString(Block block, String paramString) {
+		String[] args = paramString.split(",");
+		return new AllocatorBlock(block, filtersFromString(args[0]), BlockFace.valueOf(args[1]));
 	}
 
 	@Override
 	public String toString() {
 		String ret = "No filter";
-		if (!filter.equals(Material.AIR)) {
-			ret = "filter : " + filter;
+		if (!hasNoFilter()) {
+			ret = "filter :";
+			for (Material m : filters) {
+				ret += " " + m;
+			}
 		}
 		return ret + ", facing : " + face;
-	}
-
-	public String paramToText() {
-		return filter + "," + face;
-	}
-
-	public static AllocatorBlock fromBlockAndParamString(Block block, String paramString) {
-		String[] args = paramString.split(",");
-		return new AllocatorBlock(block, Material.valueOf(args[0]), BlockFace.valueOf(args[1]));
 	}
 
 	/**
@@ -101,6 +199,16 @@ public class AllocatorBlock {
 			break;
 
 		}
+	}
+
+	/**
+	 * Returns true, if the item is allowed to pass
+	 * 
+	 * @param itemStack
+	 * @return
+	 */
+	public boolean isPassingFilter(ItemStack itemStack) {
+		return hasNoFilter() || getFilters().contains(itemStack.getType());
 	}
 
 }

@@ -1,6 +1,8 @@
 package com.em.allocator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -141,7 +143,8 @@ public class Allocator extends JavaPlugin {
 	 * @return the new created Allocator
 	 */
 	private AllocatorBlock setNewAllocator(Block block, String[] args, Player player) {
-		Material filter = player.getItemInHand().getType();
+		List<Material> filters = new ArrayList<Material>();
+		filters.add(player.getItemInHand().getType());
 		BlockFace face = BlockFace.NORTH;
 
 		// get the block facing
@@ -149,20 +152,26 @@ public class Allocator extends JavaPlugin {
 			face = AllocatorBlock.getFace(block);
 		}
 
-		// get the parametres
+		// get the parameters
+		boolean noFilterFoundYet = true;
 		for (int i = 1; i < args.length; i++) {
 			try {
 				face = BlockFace.valueOf(args[i].toUpperCase());
 			} catch (IllegalArgumentException e1) {
 				try {
-					filter = Material.valueOf(args[i].toUpperCase());
+					Material filter = Material.valueOf(args[i].toUpperCase());
+					if (noFilterFoundYet) {
+						filters = new ArrayList<Material>();
+						noFilterFoundYet = false;
+					}
+					filters.add(filter);
 				} catch (IllegalArgumentException e2) {
 					player.sendMessage(ChatColor.RED + "Unknown parameter : " + args[i].toUpperCase());
 				}
 			}
 		}
 
-		AllocatorBlock al = new AllocatorBlock(block, filter, face);
+		AllocatorBlock al = new AllocatorBlock(block, filters, face);
 		this.allocatorMap.put(block.getLocation(), al);
 		return al;
 	}

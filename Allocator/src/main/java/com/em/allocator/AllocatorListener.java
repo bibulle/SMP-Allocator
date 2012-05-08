@@ -69,7 +69,7 @@ public class AllocatorListener implements Listener {
 			//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ());
 			// Just do the job
 			AllocatorBlock al = this.thePlugin.allocatorMap.get(event.getBlock().getLocation());
-			if ((al.power == 0) && (event.getNewCurrent() > 0)) {
+			if ((al.getPower() == 0) && (event.getNewCurrent() > 0)) {
 
 				//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ()+" -> "+event.getNewCurrent());
 				// it is powered
@@ -88,7 +88,7 @@ public class AllocatorListener implements Listener {
 
 			}
 
-			al.power = event.getNewCurrent();
+			al.setPower(event.getNewCurrent());
 			//System.out.println("New power : "+al+" -> "+al.power);
 		}
 	}
@@ -99,28 +99,29 @@ public class AllocatorListener implements Listener {
 	private void allocateItems(BlockRedstoneEvent event, Random random) {
 		Block b = event.getBlock();
 		AllocatorBlock al = this.thePlugin.allocatorMap.get(b.getLocation());
+		
 		// get filter
-		Material filter = al.filter;
-		BlockFace face = al.face;
+		//Material filter = al.filter;
+		//BlockFace face = al.face;
 
 		// list of item to allocate and corresponding remover
 		List<ItemAllocatable> inputItems = new ArrayList<ItemAllocatable>();
 
 		// get direction of Input
-		int dx = getDirectionX(face);
-		int dy = getDirectionY(face);
-		int dz = getDirectionZ(face);
+		int dx = getDirectionX(al.getFace());
+		int dy = getDirectionY(al.getFace());
+		int dz = getDirectionZ(al.getFace());
 
 		InventoryHolder inputContainer = getContainer(b, dx, dy, dz);
 
 		// No Input-Container (get dropped items)
 		if ((inputContainer == null) || (inputContainer.getInventory() == null)) {
 			Location inputLocation = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
-			inputItems = AllocatorInput.getRandomItemFromDropped(b.getWorld(), inputLocation, filter, thePlugin);
+			inputItems = AllocatorInput.getRandomItemFromDropped(b.getWorld(), inputLocation, al, thePlugin);
 
 			// Input-Container
 		} else {
-			inputItems = AllocatorInput.getRandomItemFromContainer(inputContainer, random, b, filter, thePlugin);
+			inputItems = AllocatorInput.getRandomItemFromContainer(inputContainer, random, b, al, thePlugin);
 		}
 		// Bukkit.getLogger().info(inputItems.size() +
 		// " Items to be transfered : "+inputItems);
@@ -130,7 +131,7 @@ public class AllocatorListener implements Listener {
 		// No Output-Container (get dropped items)
 		if (outputContainer == null) {
 			Location outputLocation = b.getLocation().add(0.5D - dx, 0.5D - dy, 0.5D - dz);
-			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation);
+			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation, thePlugin);
 
 			// Output-Container
 		} else {

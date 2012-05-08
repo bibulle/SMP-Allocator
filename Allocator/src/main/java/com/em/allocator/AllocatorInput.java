@@ -27,7 +27,7 @@ public class AllocatorInput {
 	 * Returns a random list of item from the dropped items
 	 * @param thePlugin 
 	 */
-	public static List<ItemAllocatable> getRandomItemFromDropped(World world, Location inputLocation, Material filter, Allocator thePlugin) {
+	public static List<ItemAllocatable> getRandomItemFromDropped(World world, Location inputLocation, AllocatorBlock al, Allocator thePlugin) {
 		List<ItemAllocatable> items = new ArrayList<ItemAllocatable>();
 
 		Arrow a = world.spawnArrow(inputLocation, new Vector(0, 0, 0), 0.0F, 0.0F);
@@ -38,19 +38,19 @@ public class AllocatorInput {
 			if (entities.get(l) instanceof Item) {
 				Item item = (Item) entities.get(l);
 				// if item not dead add to the entities list
-				if (!item.isDead()) {
+				if (!item.isDead() && al.isPassingFilter(item.getItemStack())) {
 					items.add(new ItemAllocatableFromDropped(item));
 				}
 			}
 		}
-		return limitItemList(items, thePlugin, filter);
+		return items;
 	}
 
 	/**
 	 * Returns a random list of item from the container
 	 * @param thePlugin 
 	 */
-	public static List<ItemAllocatable> getRandomItemFromContainer(InventoryHolder inventory, Random rand, Block block, Material filter, Allocator thePlugin) {
+	public static List<ItemAllocatable> getRandomItemFromContainer(InventoryHolder inventory, Random rand, Block block, AllocatorBlock al, Allocator thePlugin) {
 		List<ItemAllocatable> items = new ArrayList<ItemAllocatable>();
 
 		if (inventory == null) {
@@ -69,7 +69,7 @@ public class AllocatorInput {
 			startAt = 2;
 		}
 		for (int k = startAt; k < inventory.getInventory().getSize(); k++) {
-			if (inventory.getInventory().getItem(k) != null) {
+			if ((inventory.getInventory().getItem(k) != null) && al.isPassingFilter(inventory.getInventory().getItem(k))) {
 				itemsTemp.add(inventory.getInventory().getItem(k));
 			}
 		}
@@ -81,7 +81,7 @@ public class AllocatorInput {
 			itemsTemp.remove(r);
 		}
 
-		return limitItemList(items, thePlugin, filter);
+		return items;
 	}
 
 	/**
@@ -90,79 +90,75 @@ public class AllocatorInput {
 	 * @param itemAllocables
 	 * @param inputContainer
 	 * @param thePlugin
-	 * @param filter
+	 * @param al
 	 * @param dropped
 	 * @return
 	 */
-	private static List<ItemAllocatable> limitItemList(List<ItemAllocatable> itemAllocables, Allocator thePlugin, Material filter) {
-		List<ItemAllocatable> items = new ArrayList<ItemAllocatable>();
-
-		// Temporary stack (to count items)
-		List<ItemStack> stacks = new ArrayList<ItemStack>();
-
-		// for each potential stack
-		for (ItemAllocatable itemAllocable : itemAllocables) {
-
-			// first... must be filtered ?
-			if (passesFilter(filter, itemAllocable.getTheItemStack(), thePlugin)) {
-
-				// for each item in the Stack
-				for (int i = 0; i < itemAllocable.getAmount(); i++) {
-					if (!thePlugin.quantityIsStack) {
-						// we limit by Item numbers
-						if (items.size() < thePlugin.quantityDropped) {
-							items.add(itemAllocable);
-						}
-					} else {
-						// we limit by stack
-						// try to stack or add
-						boolean stacked = false;
-						for (ItemStack is : stacks) {
-							// if there is a not full stack add it
-							if (is.getType().equals(itemAllocable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
-								is.setAmount(is.getAmount() + 1);
-
-								items.add(itemAllocable);
-								stacked = true;
-								break;
-							}
-						}
-						// not existing stack... create a new
-						if (!stacked && stacks.size() < thePlugin.quantityDropped) {
-							stacks.add(new ItemStack(itemAllocable.getType(), 1));
-							items.add(itemAllocable);
-						}
-					}
-
-				}
-
-			}
-
-		}
-
-		return items;
-
-	}
+//	private static List<ItemAllocatable> limitItemList(List<ItemAllocatable> itemAllocables, Allocator thePlugin, AllocatorBlock al) {
+//		List<ItemAllocatable> items = new ArrayList<ItemAllocatable>();
+//
+//		// Temporary stack (to count items)
+//		List<ItemStack> stacks = new ArrayList<ItemStack>();
+//
+//		// for each potential stack
+//		for (ItemAllocatable itemAllocable : itemAllocables) {
+//
+//			// first... must be filtered ?
+//			if (passesFilter(al, itemAllocable.getTheItemStack(), thePlugin)) {
+//
+//				// for each item in the Stack
+//				for (int i = 0; i < itemAllocable.getAmount(); i++) {
+//					if (!thePlugin.quantityIsStack) {
+//						// we limit by Item numbers
+//						if (items.size() < thePlugin.quantityDropped) {
+//							items.add(itemAllocable);
+//						}
+//					} else {
+//						// we limit by stack
+//						// try to stack or add
+//						boolean stacked = false;
+//						for (ItemStack is : stacks) {
+//							// if there is a not full stack add it
+//							if (is.getType().equals(itemAllocable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
+//								is.setAmount(is.getAmount() + 1);
+//
+//								items.add(itemAllocable);
+//								stacked = true;
+//								break;
+//							}
+//						}
+//						// not existing stack... create a new
+//						if (!stacked && stacks.size() < thePlugin.quantityDropped) {
+//							stacks.add(new ItemStack(itemAllocable.getType(), 1));
+//							items.add(itemAllocable);
+//						}
+//					}
+//
+//				}
+//
+//			}
+//
+//		}
+//
+//		return items;
+//
+//	}
 
 	/**
 	 * Returns true, if the item is allowed to pass
 	 * 
-	 * @param filter
+	 * @param al
 	 * @param itemStack
 	 * @param thePlugin
 	 * @return
 	 */
-	static private boolean passesFilter(Material filter, ItemStack itemStack, Allocator thePlugin) {
+	static private boolean passesFilter(AllocatorBlock al, ItemStack itemStack, Allocator thePlugin) {
 		if (!thePlugin.allowFiltering) {
 			return true;
 		}
 
-		// No filter
-		if (filter.equals(Material.AIR)) {
-			return true;
-		}
+		return al.isPassingFilter(itemStack);
 
-		return itemStack.getType().equals(filter);
 	}
 
 
