@@ -5,16 +5,13 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 import com.em.allocator.item.ItemAllocatable;
 import com.em.allocator.item.ItemAllocatableFromDropped;
@@ -30,9 +27,7 @@ public class AllocatorInput {
 	public static List<ItemAllocatable> getRandomItemFromDropped(World world, Location inputLocation, AllocatorBlock al, Allocator thePlugin) {
 		List<ItemAllocatable> items = new ArrayList<ItemAllocatable>();
 
-		Arrow a = world.spawnArrow(inputLocation, new Vector(0, 0, 0), 0.0F, 0.0F);
-		List<Entity> entities = a.getNearbyEntities(0.5D, 0.5D, 0.5D);
-		a.remove();
+		List<Entity> entities = Allocator.getEntitiesAtLocation(inputLocation);
 
 		for (int l = 0; l < entities.size(); l++) {
 			if (entities.get(l) instanceof Item) {
@@ -152,14 +147,14 @@ public class AllocatorInput {
 	 * @param thePlugin
 	 * @return
 	 */
-	static private boolean passesFilter(AllocatorBlock al, ItemStack itemStack, Allocator thePlugin) {
-		if (!thePlugin.allowFiltering) {
-			return true;
-		}
-
-		return al.isPassingFilter(itemStack);
-
-	}
+//	static private boolean passesFilter(AllocatorBlock al, ItemStack itemStack, Allocator thePlugin) {
+//		if (!thePlugin.allowFiltering) {
+//			return true;
+//		}
+//
+//		return al.isPassingFilter(itemStack);
+//
+//	}
 
 
 }

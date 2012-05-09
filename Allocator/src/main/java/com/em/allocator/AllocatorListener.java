@@ -11,7 +11,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.StorageMinecart;
 import org.bukkit.event.EventHandler;
@@ -20,7 +19,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.util.Vector;
 
 import com.em.allocator.item.ItemAllocatable;
 
@@ -169,14 +167,13 @@ public class AllocatorListener implements Listener {
 		} else {
 			// Search for storage mine cart and such
 			Location location = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
-			Arrow a = b.getWorld().spawnArrow(location, new Vector(0, 0, 0), 0.0F, 0.0F);
-			for (Entity e : a.getNearbyEntities(0.5D, 0.5D, 0.5D)) {
+			List<Entity> entities = Allocator.getEntitiesAtLocation(location);
+			for (Entity e : entities) {
 				if (!(e instanceof StorageMinecart)) {
 					continue;
 				}
 				container = (StorageMinecart) e;
 			}
-			a.remove();
 		}
 		
 		// avoid dropping to rail

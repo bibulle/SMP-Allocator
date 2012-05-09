@@ -6,15 +6,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.material.Directional;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 import org.yaml.snakeyaml.Yaml;
 
 public class Allocator extends JavaPlugin {
@@ -212,4 +216,46 @@ public class Allocator extends JavaPlugin {
 		String[] parts = s.split(",");
 		return new Location(getServer().getWorld(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
 	}
+
+	/**
+	 * Utilities to get Dropped entities at a Location
+	 * 
+	 * @param inputLocation
+	 * @param world
+	 * @return
+	 */
+	public static List<Entity> getEntitiesAtLocation(Location inputLocation) {
+		double d = 0.5D;
+		
+		Arrow a = inputLocation.getWorld().spawnArrow(inputLocation, new Vector(0, 0, 0), 0.0F, 0.0F);
+		List<Entity> aEntities = a.getNearbyEntities(d, d, d);
+		a.remove();
+
+		List<Entity> entities = new ArrayList<Entity>(); 
+		Chunk chunk = inputLocation.getBlock().getChunk();
+		if (chunk.isLoaded()) {
+			Entity[] cEntities = chunk.getEntities();
+			for (int i = 0; i < cEntities.length; i++) {
+				Location location = cEntities[i].getLocation();
+				// compare
+				if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
+					continue;
+				}
+				if ((location.getY() < inputLocation.getY() - d) || (location.getY() > inputLocation.getY() + d)) {
+					continue;
+				}
+				if ((location.getZ() < inputLocation.getZ() - d) || (location.getZ() > inputLocation.getZ() + d)) {
+					continue;
+				}
+				// it's Ok, add it
+				entities.add(cEntities[i]);
+			}
+		}
+		
+		System.out.println(" a --> "+aEntities);
+		System.out.println(" c --> "+entities);
+
+		return entities;
+	}
+
 }
