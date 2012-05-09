@@ -2,6 +2,7 @@ package com.em.allocator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -13,12 +14,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.material.Directional;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 import org.yaml.snakeyaml.Yaml;
 
 public class Allocator extends JavaPlugin {
@@ -82,7 +81,7 @@ public class Allocator extends JavaPlugin {
 
 		try {
 			Player player = (Player) sender;
-			Block block = player.getTargetBlock(null, 5);
+			Block block = getPlayerTargetBlock(player);
 
 			if (args.length != 0) {
 				// Get info on an Allocator
@@ -102,7 +101,7 @@ public class Allocator extends JavaPlugin {
 						return true;
 					}
 					if (!block.getType().equals(BLOCK_TYPE)) {
-						player.sendMessage(ChatColor.RED + "Either that's not a " + BLOCK_TYPE.toString().toLowerCase() + ", you're too far away, or there's a non-full block in the way.");
+						player.sendMessage(ChatColor.RED + "Either that's not a " + BLOCK_TYPE.toString().toLowerCase());
 						return true;
 					}
 
@@ -225,19 +224,21 @@ public class Allocator extends JavaPlugin {
 	 * @return
 	 */
 	public static List<Entity> getEntitiesAtLocation(Location inputLocation) {
-		double d = 0.5D;
-		
-		Arrow a = inputLocation.getWorld().spawnArrow(inputLocation, new Vector(0, 0, 0), 0.0F, 0.0F);
-		List<Entity> aEntities = a.getNearbyEntities(d, d, d);
-		a.remove();
+		double d = 0.85D;
 
-		List<Entity> entities = new ArrayList<Entity>(); 
+		List<Entity> entities = new ArrayList<Entity>();
 		Chunk chunk = inputLocation.getBlock().getChunk();
 		if (chunk.isLoaded()) {
 			Entity[] cEntities = chunk.getEntities();
 			for (int i = 0; i < cEntities.length; i++) {
 				Location location = cEntities[i].getLocation();
 				// compare
+				// System.out.println(cEntities[i]+" "+(location.getX() -
+				// inputLocation.getX())+" "+inputLocation.getX());
+				// System.out.println(cEntities[i]+" "+(location.getY() -
+				// inputLocation.getY())+" "+inputLocation.getY());
+				// System.out.println(cEntities[i]+" "+(location.getZ() -
+				// inputLocation.getZ())+" "+inputLocation.getZ());
 				if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
 					continue;
 				}
@@ -251,11 +252,34 @@ public class Allocator extends JavaPlugin {
 				entities.add(cEntities[i]);
 			}
 		}
-		
-		System.out.println(" a --> "+aEntities);
-		System.out.println(" c --> "+entities);
+
+		// System.out.println(" c --> "+entities);
 
 		return entities;
+	}
+
+	/**
+	 * Get the targeted Block
+	 * 
+	 * @param player
+	 * @return
+	 */
+	private Block getPlayerTargetBlock(Player player) {
+		Block block = player.getTargetBlock(TRANSPARENT, 5);
+		return block;
+	}
+
+	// define transparent blocks id
+	private static final HashSet<Byte> TRANSPARENT = new HashSet<Byte>();
+	static {
+		TRANSPARENT.add((byte) Material.AIR.getId());
+		TRANSPARENT.add((byte) Material.FENCE.getId());
+		TRANSPARENT.add((byte) Material.FENCE_GATE.getId());
+		TRANSPARENT.add((byte) Material.DETECTOR_RAIL.getId());
+		TRANSPARENT.add((byte) Material.POWERED_RAIL.getId());
+		TRANSPARENT.add((byte) Material.RAILS.getId());
+		TRANSPARENT.add((byte) Material.REDSTONE_WIRE.getId());
+		TRANSPARENT.add((byte) Material.TORCH.getId());
 	}
 
 }

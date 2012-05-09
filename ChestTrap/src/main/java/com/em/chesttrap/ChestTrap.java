@@ -1,6 +1,7 @@
 package com.em.chesttrap;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -71,13 +72,14 @@ public class ChestTrap extends JavaPlugin {
 		}
 		try {
 			Player player = (Player) sender;
-			Block block = player.getTargetBlock(null, 5);
+			Block block = getPlayerTargetBlock(player);
+			
 			if (!block.getType().equals(BLOCK_TYPE)) {
-				sender.sendMessage(ChatColor.RED + "Either that's not a " + BLOCK_TYPE.toString().toLowerCase() + ", you're too far away, or there's a non-full block in the way.");
+				sender.sendMessage(ChatColor.RED + "This "+block.getType().toString().toLowerCase()+"is not a " + BLOCK_TYPE.toString().toLowerCase());
 				return true;
 			}
 			if (this.chestMap.containsKey(block.getLocation())) {
-				sender.sendMessage(ChatColor.RED + "That " + BLOCK_TYPE.toString().toLowerCase() + " is already an chest !");
+				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap "+ChatColor.GREEN +"("+this.chestMap.get(block.getLocation()).contentToText()+")");
 				return true;
 			}
 
@@ -88,7 +90,7 @@ public class ChestTrap extends JavaPlugin {
 				this.chestMap.put(block.getLocation(), new ItemChestTrapItem(ih.getInventory()));
 			}
 
-			sender.sendMessage(ChatColor.GREEN + "Chest added ! (" + block.getLocation() + ")");
+			sender.sendMessage(ChatColor.GREEN + "Chesttrap created");
 		} catch (ClassCastException e) {
 			sender.sendMessage("You can only use this command as a player!");
 		}
@@ -108,4 +110,28 @@ public class ChestTrap extends JavaPlugin {
 		String[] parts = s.split(",");
 		return new Location(getServer().getWorld(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
 	}
+	
+	/**
+	 * Get the targeted Block
+	 * @param player
+	 * @return
+	 */
+	private Block getPlayerTargetBlock(Player player) {
+		Block block = player.getTargetBlock(TRANSPARENT, 5);
+		return block;
+	}
+	// define transparent blocks id
+	private static final HashSet<Byte> TRANSPARENT = new HashSet<Byte>();
+	static {
+		TRANSPARENT.add((byte) Material.AIR.getId());
+		TRANSPARENT.add((byte) Material.FENCE.getId());
+		TRANSPARENT.add((byte) Material.FENCE_GATE.getId());
+		TRANSPARENT.add((byte) Material.DETECTOR_RAIL.getId());
+		TRANSPARENT.add((byte) Material.POWERED_RAIL.getId());
+		TRANSPARENT.add((byte) Material.RAILS.getId());
+		TRANSPARENT.add((byte) Material.REDSTONE_WIRE.getId());
+		TRANSPARENT.add((byte) Material.TORCH.getId());
+	}
+
+
 }

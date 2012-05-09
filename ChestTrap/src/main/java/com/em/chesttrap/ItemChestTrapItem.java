@@ -2,6 +2,7 @@ package com.em.chesttrap;
 
 import java.util.HashMap;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -73,6 +74,27 @@ public class ItemChestTrapItem {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Display the content of the chest
+	 * @return
+	 */
+	public String contentToText() {
+		String ret = "";
+		
+		for (Material material : inventoryContent.keySet()) {
+			if (ret.length() != 0) {
+				ret+= " ";
+			}
+			ret += material.toString().toLowerCase()+":"+inventoryContent.get(material);
+		}
+		
+		if (ret.length() == 0) {
+			ret = "empty";
+		}
+		
+		return ret;
 	}
 
 }

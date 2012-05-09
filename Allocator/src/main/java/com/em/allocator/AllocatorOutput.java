@@ -1,8 +1,8 @@
 package com.em.allocator;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -12,14 +12,12 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Item;
-import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.Event;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import com.avaje.ebeaninternal.server.subclass.GetterSetterMethods;
 import com.em.allocator.item.ItemAllocatable;
-import com.em.chesttrap.MyInventoryModifiedEvent;
 
 public class AllocatorOutput {
 
@@ -395,10 +393,10 @@ public class AllocatorOutput {
 		thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(thePlugin, new Runnable() {
 			public void run() {
 				if (inputContainerf != null) {
-					Bukkit.getServer().getPluginManager().callEvent(new MyInventoryModifiedEvent(inputContainerf.getInventory()));
+					sendChestTrapEventIfExist(inputContainerf.getInventory());
 				}
 				if (outputContainerf != null) {
-					Bukkit.getServer().getPluginManager().callEvent(new MyInventoryModifiedEvent(outputContainerf.getInventory()));
+					sendChestTrapEventIfExist(outputContainerf.getInventory());
 				}
 			}
 		}, 1L);
@@ -419,6 +417,40 @@ public class AllocatorOutput {
 		burning.add(Material.LAVA_BUCKET);
 		burning.add(Material.SAPLING);
 		burning.add(Material.BLAZE_ROD);
+	}
+
+	private static Constructor<Event> enventConstructor = null;
+	private static Boolean eventSearched = false;
+
+	private static void sendChestTrapEventIfExist(Inventory inventory) {
+		synchronized (eventSearched) {
+			if (!eventSearched) {
+				try {
+					@SuppressWarnings("unchecked")
+					Class<Event> cls = (Class<Event>) Class.forName("com.em.chesttrap.MyInventoryModifiedEvent");
+					enventConstructor = cls.getConstructor(Inventory.class);
+				} catch (ClassNotFoundException e) {
+				} catch (ClassCastException e) {
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
+				eventSearched = true;
+			}
+		}
+		if (enventConstructor != null) {
+			try {
+				Event event = enventConstructor.newInstance(inventory);
+				Bukkit.getServer().getPluginManager().callEvent(event);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
