@@ -1,0 +1,11 @@
+name: Fan
+main: com.em.fan.Fan
+version: 0.1
+commands:
+ fan:
+  description: Defines an Fan.
+  usage: You have no permission to use it
+permissions:
+ fan.create:
+  description: Grants the ability to use /fan.
+  default: op
