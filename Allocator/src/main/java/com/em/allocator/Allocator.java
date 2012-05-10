@@ -233,12 +233,6 @@ public class Allocator extends JavaPlugin {
 			for (int i = 0; i < cEntities.length; i++) {
 				Location location = cEntities[i].getLocation();
 				// compare
-				// System.out.println(cEntities[i]+" "+(location.getX() -
-				// inputLocation.getX())+" "+inputLocation.getX());
-				// System.out.println(cEntities[i]+" "+(location.getY() -
-				// inputLocation.getY())+" "+inputLocation.getY());
-				// System.out.println(cEntities[i]+" "+(location.getZ() -
-				// inputLocation.getZ())+" "+inputLocation.getZ());
 				if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
 					continue;
 				}

@@ -28,8 +28,6 @@ public class AllocatorListener implements Listener {
 
 	List<Material> powerList = new ArrayList<Material>();
 
-	// List<Location> dupePreventer = new ArrayList<Location>();
-
 	/**
 	 * Constructor
 	 **/
@@ -72,14 +70,6 @@ public class AllocatorListener implements Listener {
 				//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ()+" -> "+event.getNewCurrent());
 				// it is powered
 				//Bukkit.getLogger().info("Powered !! " + al);
-
-				// Check if we are doing duplication
-				// for (Location l : this.dupePreventer) {
-				// if (l.distance(event.getBlock().getLocation()) < 3.0D) {
-				// return;
-				// }
-				// }
-				// this.dupePreventer.add(event.getBlock().getLocation());
 
 				// If no... do the job
 				allocateItems(event, new Random());
@@ -140,9 +130,6 @@ public class AllocatorListener implements Listener {
 			}
 		}
 
-		// After 3 tick remove the block form the dupPreventer
-		// this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin,
-		// new DupePreventerRunnable(event), 3L);
 	}
 
 	/**
@@ -246,20 +233,5 @@ public class AllocatorListener implements Listener {
 
 		return dz;
 	}
-
-	/**
-	 * Class to remove block from the dupePreventer
-	 */
-	// public class DupePreventerRunnable implements Runnable {
-	// BlockPhysicsEvent event;
-	//
-	// DupePreventerRunnable(BlockPhysicsEvent event) {
-	// this.event = event;
-	// }
-	//
-	// public void run() {
-	// AllocatorListener.this.dupePreventer.remove(this.event.getBlock().getLocation());
-	// }
-	// }
 
 }
