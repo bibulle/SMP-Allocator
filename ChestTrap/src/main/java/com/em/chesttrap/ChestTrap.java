@@ -21,7 +21,7 @@ public class ChestTrap extends JavaPlugin {
 	ChestTrapListener thelistener = new ChestTrapListener(this);
 
 	// Properties
-	Map<Location, ItemChestTrapItem> chestMap = new HashMap<Location, ItemChestTrapItem>();
+	Map<Location, ChestTrapContent> chestMap = new HashMap<Location, ChestTrapContent>();
 
 	// Constant
 	Material BLOCK_TYPE = Material.CHEST;
@@ -58,7 +58,7 @@ public class ChestTrap extends JavaPlugin {
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
 			
-			this.chestMap.put(l, new ItemChestTrapItem(ih.getInventory()));
+			this.chestMap.put(l, new ChestTrapContent(ih.getInventory()));
 			}
 		}
 
@@ -87,7 +87,7 @@ public class ChestTrap extends JavaPlugin {
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
 			
-				this.chestMap.put(block.getLocation(), new ItemChestTrapItem(ih.getInventory()));
+				this.chestMap.put(block.getLocation(), new ChestTrapContent(ih.getInventory()));
 			}
 
 			sender.sendMessage(ChatColor.GREEN + "Chesttrap created");

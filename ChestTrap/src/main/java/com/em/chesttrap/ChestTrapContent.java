@@ -6,7 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-public class ItemChestTrapItem {
+public class ChestTrapContent {
 
 	// list of item in the inventory
 	private HashMap<Material, Integer> inventoryContent = new HashMap<Material, Integer>();
@@ -19,7 +19,7 @@ public class ItemChestTrapItem {
 		this.inventoryContent = inventoryContent;
 	}
 
-	public ItemChestTrapItem(Inventory inventory) {
+	public ChestTrapContent(Inventory inventory) {
 
 		for (ItemStack itemStack : inventory) {
 			if (itemStack == null) {
@@ -55,7 +55,7 @@ public class ItemChestTrapItem {
 	 */
 	public boolean changeInventory(Inventory inventory) {
 		
-		ItemChestTrapItem newChest = new ItemChestTrapItem(inventory);
+		ChestTrapContent newChest = new ChestTrapContent(inventory);
 		
 		for (Material material : newChest.getInventoryContent().keySet()) {
 			if (newChest.getAmount(material) != this.getAmount(material)) {
