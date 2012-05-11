@@ -45,6 +45,7 @@ public class FanBlock {
 	 *          the face
 	 */
 	public FanBlock(Block block, Fan thePlugin) {
+		this.thePlugin = thePlugin;
 		this.location = block.getLocation();
 		this.power = block.getBlockPower();
 		this.face = getFace(block);
@@ -65,10 +66,10 @@ public class FanBlock {
 			int dz = getBlowingDirectionZ();
 
 			Location pLocation = getLocation().clone();
+			pLocation = pLocation.add(0.5D, 0.5D, 0.5D);
 
 			for (int it = 0; it < range; it++) {
-				pLocation = pLocation.add(0.5D + dx, 0.5D + dy, 0.5D + dz);
-
+				pLocation = pLocation.add(dx, dy, dz);
 				if (!isNotBlockingBlock(pLocation)) {
 					break;
 				}
@@ -97,7 +98,7 @@ public class FanBlock {
 	private void pushEntity(Entity entity, int dx, int dy, int dz) {
 		// TODO try to use motion (on EntityItem)
 		double maxspeed = 0.4;
-		double boost = 0.1;
+		double boost = 0.15;
 		Vector motion = entity.getVelocity();
 		if (Math.abs(dx) != 0) {
 			if (motion.getX() * dx < 0) {
@@ -230,10 +231,10 @@ public class FanBlock {
 		int dx = 0;
 		switch (face) {
 		case EAST:
-			dx = -1;
+			dx = 1;
 			break;
 		case WEST:
-			dx = 1;
+			dx = -1;
 			break;
 		default:
 			break;
@@ -249,10 +250,10 @@ public class FanBlock {
 		int dy = 0;
 		switch (face) {
 		case UP:
-			dy = -1;
+			dy = 1;
 			break;
 		case DOWN:
-			dy = 1;
+			dy = -1;
 			break;
 		default:
 			break;
@@ -268,10 +269,10 @@ public class FanBlock {
 		int dz = 0;
 		switch (face) {
 		case SOUTH:
-			dz = -1;
+			dz = 1;
 			break;
 		case NORTH:
-			dz = 1;
+			dz = -1;
 			break;
 		default:
 			break;
@@ -292,9 +293,9 @@ public class FanBlock {
 		switch (face) {
 		case UP:
 		case DOWN:
-			return NOT_BLOCKING_VERTICAL.contains(block.getTypeId());
+			return NOT_BLOCKING_VERTICAL.contains((byte)block.getTypeId());
 		default:
-			return NOT_BLOCKING_HORIZONTAL.contains(block.getTypeId());
+			return NOT_BLOCKING_HORIZONTAL.contains((byte)block.getTypeId());
 		}
 	}
 

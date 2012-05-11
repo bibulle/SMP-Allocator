@@ -2,20 +2,13 @@ package com.em.fan;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.util.Vector;
 
 public class FanListener implements Listener {
 
@@ -61,13 +54,14 @@ public class FanListener implements Listener {
 		if (this.thePlugin.fanMap.containsKey(event.getBlock().getLocation())) {
 
 			// Just do the job
-			FanBlock al = this.thePlugin.fanMap.get(event.getBlock().getLocation());
-			if ((al.getPower() == 0) && (event.getNewCurrent() > 0)) {
+			FanBlock fb = this.thePlugin.fanMap.get(event.getBlock().getLocation());
+			if ((fb.getPower() == 0) && (event.getNewCurrent() > 0)) {
 				// If no... do the job
-				al.blow();
+				fb.setPower(event.getNewCurrent());
+				fb.blow();
 			}
 
-			al.setPower(event.getNewCurrent());
+			fb.setPower(event.getNewCurrent());
 		}
 	}
 
