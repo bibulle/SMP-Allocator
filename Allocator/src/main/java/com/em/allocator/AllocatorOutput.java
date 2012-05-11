@@ -298,7 +298,7 @@ public class AllocatorOutput {
 					ItemStack item = itemAllocatable.getTheItemStack().clone();
 					item.setAmount(1);
 
-					// if it's fuel
+					// if it's fuel set it in the fuel
 					if (isFuel(itemAllocatable.getTheItemStack()) && (outputContainer.getInventory().getFuel() == null)) {
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(item, stackDropped, thePlugin);
@@ -314,7 +314,7 @@ public class AllocatorOutput {
 								// Bukkit.getLogger().info(" Item not added " + item);
 							}
 						}
-					} else if (outputContainer.getInventory().getSmelting() == null) {
+					} else if (!isFuel(itemAllocatable.getTheItemStack()) && (outputContainer.getInventory().getSmelting() == null)) {
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(item, stackDropped, thePlugin);
 						if (canBeDropped) {
