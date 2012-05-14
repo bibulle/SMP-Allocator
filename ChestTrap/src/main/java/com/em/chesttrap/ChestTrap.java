@@ -1,7 +1,9 @@
 package com.em.chesttrap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -24,7 +26,11 @@ public class ChestTrap extends JavaPlugin {
 	Map<Location, ChestTrapContent> chestMap = new HashMap<Location, ChestTrapContent>();
 
 	// Constant
-	Material BLOCK_TYPE = Material.CHEST;
+	private static final List<Material> BLOCK_TYPES = new ArrayList<Material>();
+	static {
+		BLOCK_TYPES.add(Material.CHEST);
+		BLOCK_TYPES.add(Material.FURNACE);
+	}
 
 	public void onDisable() {
 		// reload the config
@@ -74,8 +80,8 @@ public class ChestTrap extends JavaPlugin {
 			Player player = (Player) sender;
 			Block block = getPlayerTargetBlock(player);
 			
-			if (!block.getType().equals(BLOCK_TYPE)) {
-				sender.sendMessage(ChatColor.RED + "This "+block.getType().toString().toLowerCase()+"is not a " + BLOCK_TYPE.toString().toLowerCase());
+			if (!BLOCK_TYPES.contains(block.getType())) {
+				sender.sendMessage(ChatColor.RED + "This "+block.getType().toString().toLowerCase()+"is not in the list : " + getBlockTypesAsString());
 				return true;
 			}
 			if (this.chestMap.containsKey(block.getLocation())) {
@@ -109,6 +115,22 @@ public class ChestTrap extends JavaPlugin {
 	Location convertString(String s) {
 		String[] parts = s.split(",");
 		return new Location(getServer().getWorld(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
+	}
+	
+	/**
+	 * Get list of allowed block as String (to be trace of put in messaged)
+	 * @return
+	 */
+	String getBlockTypesAsString() {
+		String ret = "";
+		
+		for (Material m : BLOCK_TYPES) {
+			ret += ", "+m.toString().toLowerCase();
+		}
+		
+		ret.replaceFirst(", ", "");
+		
+		return ret;
 	}
 	
 	/**
