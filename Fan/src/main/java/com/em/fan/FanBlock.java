@@ -56,8 +56,8 @@ public class FanBlock {
 	 * Just blow items
 	 */
 	public void blow() {
-		// TODO : set it as plugin config
-		int range = 4;
+
+		int range = thePlugin.fanRange;
 
 		if (getPower() > 0) {
 
@@ -96,7 +96,7 @@ public class FanBlock {
 	}
 
 	private void pushEntity(Entity entity, int dx, int dy, int dz) {
-		// TODO try to use motion (on EntityItem)
+
 		double maxspeed = 0.4;
 		double boost = 0.15;
 		Vector motion = entity.getVelocity();
@@ -138,7 +138,7 @@ public class FanBlock {
 	 * @return
 	 */
 	private List<Entity> getEntitiesAtLocation(Location inputLocation) {
-		double d = 0.85D;
+		//double d = 0.85D;
 
 		List<Entity> entities = new ArrayList<Entity>();
 		Chunk chunk = inputLocation.getBlock().getChunk();

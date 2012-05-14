@@ -21,6 +21,7 @@ public class Fan extends JavaPlugin {
 
 	// Properties
 	Map<Location, FanBlock> fanMap = new HashMap<Location, FanBlock>();
+	public int fanRange = 4;
 
 	// Constant
 	Material BLOCK_TYPE = Material.PUMPKIN;
@@ -58,7 +59,10 @@ public class Fan extends JavaPlugin {
 			}
 		}
 
+		fanRange = getConfig().getInt("range", 4);
+
 		getLogger().info(fanMap.size() + " fans");
+		getLogger().info("range = " + fanRange);
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
