@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -226,24 +227,44 @@ public class Allocator extends JavaPlugin {
 	public static List<Entity> getEntitiesAtLocation(Location inputLocation) {
 		double d = 0.85D;
 
+		// System.out.println("getEntitiesAtLocation " + inputLocation);
 		List<Entity> entities = new ArrayList<Entity>();
-		Chunk chunk = inputLocation.getBlock().getChunk();
-		if (chunk.isLoaded()) {
-			Entity[] cEntities = chunk.getEntities();
-			for (int i = 0; i < cEntities.length; i++) {
-				Location location = cEntities[i].getLocation();
-				// compare
-				if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
-					continue;
+		Set<Chunk> chunks = new HashSet<Chunk>();
+		chunks.add(inputLocation.getBlock().getChunk());
+		chunks.add(inputLocation.getBlock().getRelative(BlockFace.NORTH).getChunk());
+		chunks.add(inputLocation.getBlock().getRelative(BlockFace.SOUTH).getChunk());
+		chunks.add(inputLocation.getBlock().getRelative(BlockFace.EAST).getChunk());
+		chunks.add(inputLocation.getBlock().getRelative(BlockFace.WEST).getChunk());
+		for (Chunk chunk : chunks) {
+
+			// System.out.println(chunk.);
+			if (chunk.isLoaded()) {
+				//System.out.println("chunk.isLoaded() ");
+				Entity[] cEntities = chunk.getEntities();
+				//System.out.println("cEntities" + cEntities.length);
+				for (Entity ent : cEntities) {
+					// System.out.println("ent " + ent +
+					// " "+ent.getLocation()+" "+inputLocation);
+					// if (ent.getLocation().getBlock()
+					// .equals(inputLocation.getBlock())) {
+					// entities.add(ent);
+					// System.out.println("added " + ent);
+					// }
+					// }
+					Location location = ent.getLocation();
+					// compare
+					if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
+						continue;
+					}
+					if ((location.getY() < inputLocation.getY() - d) || (location.getY() > inputLocation.getY() + d)) {
+						continue;
+					}
+					if ((location.getZ() < inputLocation.getZ() - d) || (location.getZ() > inputLocation.getZ() + d)) {
+						continue;
+					}
+					// // it's Ok, add it
+					entities.add(ent);
 				}
-				if ((location.getY() < inputLocation.getY() - d) || (location.getY() > inputLocation.getY() + d)) {
-					continue;
-				}
-				if ((location.getZ() < inputLocation.getZ() - d) || (location.getZ() > inputLocation.getZ() + d)) {
-					continue;
-				}
-				// it's Ok, add it
-				entities.add(cEntities[i]);
 			}
 		}
 
@@ -274,6 +295,8 @@ public class Allocator extends JavaPlugin {
 		TRANSPARENT.add((byte) Material.RAILS.getId());
 		TRANSPARENT.add((byte) Material.REDSTONE_WIRE.getId());
 		TRANSPARENT.add((byte) Material.TORCH.getId());
+		TRANSPARENT.add((byte) Material.WOOD_PLATE.getId());
+		TRANSPARENT.add((byte) Material.STONE_PLATE.getId());
 	}
 
 }
