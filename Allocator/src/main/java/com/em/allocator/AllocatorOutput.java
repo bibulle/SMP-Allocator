@@ -136,7 +136,7 @@ public class AllocatorOutput {
 						continue;
 					}
 					// if there is a not full stack add it
-					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
+					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize()) && (is.getData().equals(itemAllocatable.getData()))) {
 
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
@@ -273,7 +273,7 @@ public class AllocatorOutput {
 						continue;
 					}
 					// if there is a not full stack add it
-					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
+					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize()) && (is.getData().equals(itemAllocatable.getData()))) {
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
 						if (canBeDropped) {
@@ -343,7 +343,7 @@ public class AllocatorOutput {
 	}
 
 	/**
-	 * Can this item be dropped (du to count limits in config)
+	 * Can this item be dropped (due to count limits in config)
 	 * 
 	 * @param is
 	 * @param stackDropped
@@ -370,7 +370,7 @@ public class AllocatorOutput {
 			for (ItemStack droppedItemStack : stackDropped) {
 				// try to add it into the dropped stack
 				// System.out.println(droppedItemStack.getAmount()+" "+is.getMaxStackSize());
-				if (is.getType().equals(droppedItemStack.getType()) && (droppedItemStack.getAmount() < is.getMaxStackSize())) {
+				if (is.getType().equals(droppedItemStack.getType()) && (droppedItemStack.getAmount() < is.getMaxStackSize()) && (is.getData().equals(droppedItemStack.getData()))) {
 					droppedItemStack.setAmount(droppedItemStack.getAmount() + 1);
 					dropped = true;
 				}
