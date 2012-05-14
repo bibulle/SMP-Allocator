@@ -2,6 +2,7 @@ package com.em.allocator.item;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 public abstract class ItemAllocatable {
 
@@ -23,7 +24,15 @@ public abstract class ItemAllocatable {
 		}
 		return theItemStack.getType();
 	}
-	
+
+	public MaterialData getData() {
+		if (theItemStack == null)  {
+			return null;
+		}
+		return theItemStack.getData();
+	}
+
+
 	public int getAmount() {
 		if (theItemStack == null)  {
 			return -1;

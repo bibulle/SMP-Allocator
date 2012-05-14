@@ -53,8 +53,8 @@ public class AllocatorOutput {
 				// try to stack or add
 				boolean stacked = false;
 				for (ItemStack is : stacks) {
-					// if there is a not full stack add it
-					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize())) {
+					// if there is a not full stack of the same type and material, add it
+					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize()) && (is.getData().equals(itemAllocatable.getData()))) {
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
 						if (canBeDropped) {
