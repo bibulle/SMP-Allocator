@@ -48,12 +48,14 @@ public class ChestTrapListener implements Listener {
 	 **/
 	@EventHandler
 	public void onInventoryEvent(FurnaceSmeltEvent event) {
-		System.out.println(event.getEventName() + " " + event.getBlock());
+		//System.out.println(event.getEventName() + " " + event.getBlock());
 
 		BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof InventoryHolder) {
+			
 			InventoryHolder ih = (InventoryHolder) blockState;
 			onInventoryEvent(new MyInventoryModifiedEvent(ih.getInventory()));
+			
 		}
 	}
 
@@ -100,12 +102,12 @@ public class ChestTrapListener implements Listener {
 	 *          the single chast
 	 */
 	private void eventReceivedOnChest(MyInventoryModifiedEvent event, InventoryHolder ih) {
-		Chest chest = null;
-		if (ih instanceof Chest) {
-			chest = (Chest) ih;
+		BlockState blockState = null;
+		if (ih instanceof BlockState) {
+			blockState = (BlockState) ih;
 		}
-		if (chest != null) {
-			Block b = chest.getBlock();
+		if (blockState != null) {
+			Block b = blockState.getBlock();
 
 			boolean changed = this.thePlugin.chestMap.containsKey(b.getLocation()) && this.thePlugin.chestMap.get(b.getLocation()).changeInventory(event.getInventory());
 			// System.out.println("================== MyInventoryModifiedEvent 4");
