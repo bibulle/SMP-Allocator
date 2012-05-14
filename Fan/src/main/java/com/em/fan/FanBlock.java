@@ -144,21 +144,33 @@ public class FanBlock {
 		Chunk chunk = inputLocation.getBlock().getChunk();
 		if (chunk.isLoaded()) {
 			Entity[] cEntities = chunk.getEntities();
-			for (int i = 0; i < cEntities.length; i++) {
-				Location location = cEntities[i].getLocation();
-				// compare
-				if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
-					continue;
-				}
-				if ((location.getY() < inputLocation.getY() - d) || (location.getY() > inputLocation.getY() + d)) {
-					continue;
-				}
-				if ((location.getZ() < inputLocation.getZ() - d) || (location.getZ() > inputLocation.getZ() + d)) {
-					continue;
-				}
-				// it's Ok, add it
-				entities.add(cEntities[i]);
-			}
+			
+			 for(Entity  ent:cEntities)
+		        {
+		            if(ent.getLocation().getBlock().equals(inputLocation.getBlock()))
+		            {
+		            	entities.add(ent);
+		            }
+		        }
+		        
+			// for (int i = 0; i < cEntities.length; i++) {
+			// Location location = cEntities[i].getLocation();
+			// // compare
+			// if ((location.getX() < inputLocation.getX() - d) ||
+			// (location.getX() > inputLocation.getX() + d)) {
+			// continue;
+			// }
+			// if ((location.getY() < inputLocation.getY() - d) ||
+			// (location.getY() > inputLocation.getY() + d)) {
+			// continue;
+			// }
+			// if ((location.getZ() < inputLocation.getZ() - d) ||
+			// (location.getZ() > inputLocation.getZ() + d)) {
+			// continue;
+			// }
+			// // it's Ok, add it
+			// entities.add(cEntities[i]);
+			// }
 		}
 
 		return entities;
@@ -307,7 +319,8 @@ public class FanBlock {
 		NOT_BLOCKING_HORIZONTAL.add((byte)Material.POWERED_RAIL.getId());
 		NOT_BLOCKING_HORIZONTAL.add((byte)Material.RAILS.getId());
 		NOT_BLOCKING_HORIZONTAL.add((byte)Material.REDSTONE_WIRE.getId());
-		NOT_BLOCKING_HORIZONTAL.add((byte)Material.TORCH.getId());
+		NOT_BLOCKING_HORIZONTAL.add((byte)Material.WOOD_PLATE.getId());
+		NOT_BLOCKING_HORIZONTAL.add((byte)Material.STONE_PLATE.getId());
 
 		NOT_BLOCKING_VERTICAL.add((byte)Material.AIR.getId());
 		NOT_BLOCKING_VERTICAL.add((byte)Material.FENCE.getId());
