@@ -126,6 +126,7 @@ public class AllocatorBlock {
 	 */
 	public static AllocatorBlock fromBlockAndParamString(Block block, String paramString) {
 		String[] args = paramString.split(",");
+		//System.out.println(args.length+"'"+paramString+"'");
 		return new AllocatorBlock(block, filtersFromString(args[0]), BlockFace.valueOf(args[1]));
 	}
 
