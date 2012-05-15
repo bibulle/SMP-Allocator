@@ -30,6 +30,7 @@ public class ChestTrap extends JavaPlugin {
 	static {
 		BLOCK_TYPES.add(Material.CHEST);
 		BLOCK_TYPES.add(Material.FURNACE);
+		BLOCK_TYPES.add(Material.DISPENSER);
 	}
 
 	public void onDisable() {

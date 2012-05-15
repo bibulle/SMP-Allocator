@@ -13,6 +13,7 @@ import org.bukkit.block.DoubleChest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -47,6 +48,22 @@ public class ChestTrapListener implements Listener {
 	 **/
 	@EventHandler
 	public void onInventoryEvent(FurnaceSmeltEvent event) {
+		//System.out.println(event.getEventName() + " " + event.getBlock());
+
+		BlockState blockState = event.getBlock().getState();
+		if (blockState instanceof InventoryHolder) {
+			
+			InventoryHolder ih = (InventoryHolder) blockState;
+			onInventoryEvent(new MyInventoryModifiedEvent(ih.getInventory()));
+			
+		}
+	}
+
+	/**
+	 * On an item is dispensed from a block. (it changes the inventory)
+	 **/
+	@EventHandler
+	public void onInventoryEvent(BlockDispenseEvent event) {
 		//System.out.println(event.getEventName() + " " + event.getBlock());
 
 		BlockState blockState = event.getBlock().getState();
