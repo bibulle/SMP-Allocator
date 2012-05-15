@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Chunk;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -82,6 +83,8 @@ public class FanBlock {
 				}
 			}
 
+			location.getWorld().playEffect(location, Effect.BLAZE_SHOOT, 0);
+			
 			final FanBlock fb = this;
 			this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
 				
