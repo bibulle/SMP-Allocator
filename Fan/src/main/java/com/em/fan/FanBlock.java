@@ -83,8 +83,6 @@ public class FanBlock {
 				}
 			}
 
-			location.getWorld().playEffect(location, Effect.BLAZE_SHOOT, 0);
-			
 			final FanBlock fb = this;
 			this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
 				
