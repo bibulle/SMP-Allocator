@@ -70,7 +70,13 @@ public class ChestTrapListener implements Listener {
 		if (blockState instanceof InventoryHolder) {
 			
 			InventoryHolder ih = (InventoryHolder) blockState;
-			onInventoryEvent(new MyInventoryModifiedEvent(ih.getInventory()));
+			final MyInventoryModifiedEvent aEvent = new MyInventoryModifiedEvent(ih.getInventory());
+			this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
+				public void run() {
+					onInventoryEvent(aEvent);
+				}
+			}, 0L);
+			
 			
 		}
 	}
