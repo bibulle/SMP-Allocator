@@ -9,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -115,13 +114,22 @@ public class ChestTrapListener implements Listener {
 				// System.out.println("================== MyInventoryModifiedEvent 5");
 
 				// Inventory change, set on power !!!!
+				List<Block> arrayTmp = new ArrayList<Block>();
+				arrayTmp.add(b.getRelative(BlockFace.NORTH));
+				arrayTmp.add(b.getRelative(BlockFace.SOUTH));
+				arrayTmp.add(b.getRelative(BlockFace.EAST));
+				arrayTmp.add(b.getRelative(BlockFace.WEST));
+				arrayTmp.add(b.getRelative(BlockFace.UP));
+				arrayTmp.add(b.getRelative(BlockFace.DOWN));
+				
+				// Just sort it randomly
 				List<Block> array = new ArrayList<Block>();
-				array.add(b.getRelative(BlockFace.NORTH));
-				array.add(b.getRelative(BlockFace.SOUTH));
-				array.add(b.getRelative(BlockFace.EAST));
-				array.add(b.getRelative(BlockFace.WEST));
-				array.add(b.getRelative(BlockFace.UP));
-				array.add(b.getRelative(BlockFace.DOWN));
+				while (!arrayTmp.isEmpty()) {
+					int r = (int) Math.floor(Math.random() * arrayTmp.size());
+					array.add(arrayTmp.get(r));
+					arrayTmp.remove(r);
+				}
+
 
 				for (Block block : array) {
 					final Block blockf = block;
