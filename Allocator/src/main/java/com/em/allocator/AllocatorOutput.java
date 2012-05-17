@@ -54,7 +54,7 @@ public class AllocatorOutput {
 				boolean stacked = false;
 				for (ItemStack is : stacks) {
 					// if there is a not full stack of the same type and material, add it
-					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize()) && (is.getData().equals(itemAllocatable.getData()))) {
+					if (canBeStacked(itemAllocatable, is)) {
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
 						if (canBeDropped) {
@@ -107,6 +107,41 @@ public class AllocatorOutput {
 	}
 
 	/**
+	 * can this allocatable item be stacked into this stack .
+	 * 
+	 * @param itemAllocatable
+	 * @param is
+	 * @return
+	 */
+
+	private static boolean canBeStacked(ItemAllocatable itemAllocatable, ItemStack is) {
+		return canBeStacked(itemAllocatable.getTheItemStack(), is);
+	}
+
+	/**
+	 * can this allocatable item be stacked into this stack .
+	 * 
+	 * @param itemAllocatable
+	 * @param is
+	 * @return
+	 */
+
+	private static boolean canBeStacked(ItemStack itemAllocatable, ItemStack is) {
+		boolean canBe = false;
+
+		// same type ?
+		canBe = is.getType().equals(itemAllocatable.getType());
+
+		// Stack Not full
+		canBe = canBe && (is.getAmount() < is.getMaxStackSize());
+
+		// Same color ?
+		canBe = canBe && (is.getData().equals(itemAllocatable.getData()));
+
+		return canBe;
+	}
+
+	/**
 	 * Just add Item to inventory
 	 * 
 	 * @param inputItems
@@ -136,7 +171,7 @@ public class AllocatorOutput {
 						continue;
 					}
 					// if there is a not full stack add it
-					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize()) && (is.getData().equals(itemAllocatable.getData()))) {
+					if (canBeStacked(itemAllocatable, is)) {
 
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
@@ -273,7 +308,7 @@ public class AllocatorOutput {
 						continue;
 					}
 					// if there is a not full stack add it
-					if (is.getType().equals(itemAllocatable.getType()) && (is.getAmount() < is.getMaxStackSize()) && (is.getData().equals(itemAllocatable.getData()))) {
+					if (canBeStacked(itemAllocatable, is)) {
 						// limit to count (via config)
 						boolean canBeDropped = limitDropCount(is, stackDropped, thePlugin);
 						if (canBeDropped) {
@@ -365,19 +400,22 @@ public class AllocatorOutput {
 			// System.out.println("--- Items " + stackDropped.size() + "->" +
 			// dropped);
 		} else {
-			// System.out.println("--- Stack " + stackDropped.size());
+			//System.out.println("--- Stack " + stackDropped.size());
 			// In case of stack filter, try to add it in stackDropped count
 			for (ItemStack droppedItemStack : stackDropped) {
 				// try to add it into the dropped stack
-				// System.out.println(droppedItemStack.getAmount()+" "+is.getMaxStackSize());
-				if (is.getType().equals(droppedItemStack.getType()) && (droppedItemStack.getAmount() < is.getMaxStackSize()) && (is.getData().equals(droppedItemStack.getData()))) {
+				 //System.out.println(droppedItemStack.getAmount()+" "+is.getMaxStackSize());
+				if (canBeStacked(is,droppedItemStack)) {
 					droppedItemStack.setAmount(droppedItemStack.getAmount() + 1);
 					dropped = true;
 				}
 			}
 			// Not added try to create a new stack
 			if (!dropped && (stackDropped.size() < thePlugin.quantityDropped)) {
-				stackDropped.add(new ItemStack(is.getType(), 1));
+				ItemStack item = is.clone();
+				item.setAmount(1);
+
+				stackDropped.add(item);
 				dropped = true;
 			}
 			// System.out.println("--- Stack " + stackDropped.size() + "->" +
