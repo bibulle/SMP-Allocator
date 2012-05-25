@@ -232,7 +232,11 @@ public class Allocator extends JavaPlugin {
 			Entity[] cEntities = chunk.getEntities();
 
 			for (Entity ent : cEntities) {
+				// if (ent instanceof StorageMinecart) {
+				// System.out.println(ent.getLocation().getBlock().equals(inputLocation.getBlock())+" "+ent.getLocation().distance(inputLocation));
+				// }
 				if (ent.getLocation().getBlock().equals(inputLocation.getBlock())) {
+					//System.out.println("found "+ent.getClass().getName());
 					entities.add(ent);
 				}
 			}
@@ -255,25 +259,30 @@ public class Allocator extends JavaPlugin {
 		
 		for (Entity e : entities) {
 			if (e instanceof StorageMinecart) {
+				//System.out.println("BLOCK");
 				return (StorageMinecart) e;
 			}
 		}
 		
 		// not found
 		Block b = inputLocation.getBlock();
-		if (b.getType().equals(Material.DETECTOR_RAIL) && b.isBlockPowered()) {
+		if (b.getType().equals(Material.DETECTOR_RAIL) && b.isBlockIndirectlyPowered()) {
+			//System.out.println("NORTH");
 			StorageMinecart s = getMinecartAtLocation(b.getRelative(BlockFace.NORTH).getLocation());
 			if (s != null) {
 				return s;
 			}
+			//System.out.println("SOUTH");
 			s = getMinecartAtLocation(b.getRelative(BlockFace.SOUTH).getLocation());
 			if (s != null) {
 				return s;
 			}
+			//System.out.println("EAST");
 			s = getMinecartAtLocation(b.getRelative(BlockFace.EAST).getLocation());
 			if (s != null) {
 				return s;
 			}
+			//System.out.println("WEST");
 			s = getMinecartAtLocation(b.getRelative(BlockFace.WEST).getLocation());
 			if (s != null) {
 				return s;
