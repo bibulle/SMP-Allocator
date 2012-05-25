@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -17,6 +16,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.StorageMinecart;
 import org.bukkit.material.Directional;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
@@ -225,52 +225,62 @@ public class Allocator extends JavaPlugin {
 	 * @return
 	 */
 	public static List<Entity> getEntitiesAtLocation(Location inputLocation) {
-		double d = 0.85D;
 
-		// System.out.println("getEntitiesAtLocation " + inputLocation);
 		List<Entity> entities = new ArrayList<Entity>();
-		Set<Chunk> chunks = new HashSet<Chunk>();
-		chunks.add(inputLocation.getBlock().getChunk());
-		chunks.add(inputLocation.getBlock().getRelative(BlockFace.NORTH).getChunk());
-		chunks.add(inputLocation.getBlock().getRelative(BlockFace.SOUTH).getChunk());
-		chunks.add(inputLocation.getBlock().getRelative(BlockFace.EAST).getChunk());
-		chunks.add(inputLocation.getBlock().getRelative(BlockFace.WEST).getChunk());
-		for (Chunk chunk : chunks) {
+		Chunk chunk = inputLocation.getBlock().getChunk();
+		if (chunk.isLoaded()) {
+			Entity[] cEntities = chunk.getEntities();
 
-			// System.out.println(chunk.);
-			if (chunk.isLoaded()) {
-				//System.out.println("chunk.isLoaded() ");
-				Entity[] cEntities = chunk.getEntities();
-				//System.out.println("cEntities" + cEntities.length);
-				for (Entity ent : cEntities) {
-					// System.out.println("ent " + ent +
-					// " "+ent.getLocation()+" "+inputLocation);
-					// if (ent.getLocation().getBlock()
-					// .equals(inputLocation.getBlock())) {
-					// entities.add(ent);
-					// System.out.println("added " + ent);
-					// }
-					// }
-					Location location = ent.getLocation();
-					// compare
-					if ((location.getX() < inputLocation.getX() - d) || (location.getX() > inputLocation.getX() + d)) {
-						continue;
-					}
-					if ((location.getY() < inputLocation.getY() - d) || (location.getY() > inputLocation.getY() + d)) {
-						continue;
-					}
-					if ((location.getZ() < inputLocation.getZ() - d) || (location.getZ() > inputLocation.getZ() + d)) {
-						continue;
-					}
-					// // it's Ok, add it
+			for (Entity ent : cEntities) {
+				if (ent.getLocation().getBlock().equals(inputLocation.getBlock())) {
 					entities.add(ent);
 				}
 			}
 		}
 
-		// System.out.println(" c --> "+entities);
-
 		return entities;
+	}
+
+	/**
+	 * Utilities to get Dropped entities at a Location
+	 * 
+	 * @param inputLocation
+	 * @param world
+	 * @return
+	 */
+	public static StorageMinecart getMinecartAtLocation(Location inputLocation) {
+		
+		// First look at the right location
+		List<Entity> entities = getEntitiesAtLocation(inputLocation);
+		
+		for (Entity e : entities) {
+			if (!(e instanceof StorageMinecart)) {
+				return (StorageMinecart) e;
+			}
+		}
+		
+		// not found
+		Block b = inputLocation.getBlock();
+		if (b.getType().equals(Material.DETECTOR_RAIL) && b.isBlockPowered()) {
+			StorageMinecart s = getMinecartAtLocation(b.getRelative(BlockFace.NORTH).getLocation());
+			if (s != null) {
+				return s;
+			}
+			s = getMinecartAtLocation(b.getRelative(BlockFace.SOUTH).getLocation());
+			if (s != null) {
+				return s;
+			}
+			s = getMinecartAtLocation(b.getRelative(BlockFace.EAST).getLocation());
+			if (s != null) {
+				return s;
+			}
+			s = getMinecartAtLocation(b.getRelative(BlockFace.WEST).getLocation());
+			if (s != null) {
+				return s;
+			}
+		}
+
+		return null;
 	}
 
 	/**

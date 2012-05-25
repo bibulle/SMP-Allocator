@@ -11,8 +11,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -154,13 +152,7 @@ public class AllocatorListener implements Listener {
 		} else {
 			// Search for storage mine cart and such
 			Location location = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
-			List<Entity> entities = Allocator.getEntitiesAtLocation(location);
-			for (Entity e : entities) {
-				if (!(e instanceof StorageMinecart)) {
-					continue;
-				}
-				container = (StorageMinecart) e;
-			}
+			container = Allocator.getMinecartAtLocation(location);
 		}
 		
 		// avoid dropping to rail
