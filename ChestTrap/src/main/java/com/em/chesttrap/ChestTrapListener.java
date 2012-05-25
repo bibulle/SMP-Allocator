@@ -48,14 +48,14 @@ public class ChestTrapListener implements Listener {
 	 **/
 	@EventHandler
 	public void onInventoryEvent(FurnaceSmeltEvent event) {
-		//System.out.println(event.getEventName() + " " + event.getBlock());
+		// System.out.println(event.getEventName() + " " + event.getBlock());
 
 		BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof InventoryHolder) {
-			
+
 			InventoryHolder ih = (InventoryHolder) blockState;
 			onInventoryEvent(new MyInventoryModifiedEvent(ih.getInventory()));
-			
+
 		}
 	}
 
@@ -64,11 +64,11 @@ public class ChestTrapListener implements Listener {
 	 **/
 	@EventHandler
 	public void onInventoryEvent(BlockDispenseEvent event) {
-		//System.out.println(event.getEventName() + " " + event.getBlock());
+		// System.out.println(event.getEventName() + " " + event.getBlock());
 
 		BlockState blockState = event.getBlock().getState();
 		if (blockState instanceof InventoryHolder) {
-			
+
 			InventoryHolder ih = (InventoryHolder) blockState;
 			final MyInventoryModifiedEvent aEvent = new MyInventoryModifiedEvent(ih.getInventory());
 			this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
@@ -76,8 +76,7 @@ public class ChestTrapListener implements Listener {
 					onInventoryEvent(aEvent);
 				}
 			}, 0L);
-			
-			
+
 		}
 	}
 
@@ -108,8 +107,13 @@ public class ChestTrapListener implements Listener {
 
 		if (ih instanceof DoubleChest) {
 			DoubleChest doubleChest = (DoubleChest) ih;
-			eventReceivedOnChest(event, doubleChest.getRightSide());
-			eventReceivedOnChest(event, doubleChest.getLeftSide());
+			if (Math.random() < 0.5) {
+				eventReceivedOnChest(event, doubleChest.getRightSide());
+				eventReceivedOnChest(event, doubleChest.getLeftSide());
+			} else {
+				eventReceivedOnChest(event, doubleChest.getLeftSide());
+				eventReceivedOnChest(event, doubleChest.getRightSide());
+			}
 		} else {
 			eventReceivedOnChest(event, ih);
 		}
@@ -144,7 +148,7 @@ public class ChestTrapListener implements Listener {
 				arrayTmp.add(b.getRelative(BlockFace.WEST));
 				arrayTmp.add(b.getRelative(BlockFace.UP));
 				arrayTmp.add(b.getRelative(BlockFace.DOWN));
-				
+
 				// Just sort it randomly
 				List<Block> array = new ArrayList<Block>();
 				while (!arrayTmp.isEmpty()) {
@@ -152,7 +156,6 @@ public class ChestTrapListener implements Listener {
 					array.add(arrayTmp.get(r));
 					arrayTmp.remove(r);
 				}
-
 
 				for (Block block : array) {
 					final Block blockf = block;
