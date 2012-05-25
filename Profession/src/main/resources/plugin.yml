@@ -1,0 +1,11 @@
+name: Profession
+main: com.em.profession.Profession
+version: 0.1
+commands:
+ profession:
+  description: Change profession of villager walking on a pressure plate.
+  usage: You have no permission to use it
+permissions:
+ profession.create:
+  description: Grants the ability to use /profession.
+  default: op
