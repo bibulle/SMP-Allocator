@@ -254,7 +254,7 @@ public class Allocator extends JavaPlugin {
 		List<Entity> entities = getEntitiesAtLocation(inputLocation);
 		
 		for (Entity e : entities) {
-			if (!(e instanceof StorageMinecart)) {
+			if (e instanceof StorageMinecart) {
 				return (StorageMinecart) e;
 			}
 		}
