@@ -22,6 +22,7 @@ public class ProfessionBlock {
 	 */
 	public ProfessionBlock(Player player, String professionS) {
 		try {
+			//System.out.println(professionS);
 			this.profession = Villager.Profession.valueOf(professionS.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			if (player != null) {

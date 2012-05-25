@@ -50,12 +50,13 @@ public class ProfessionListener implements Listener {
 			ProfessionBlock fb = this.thePlugin.professionMap.get(location);
 			if (event.getNewCurrent() > 0) {
 				// If no... do the job
-				System.out.println("looking for villager");
+				//System.out.println("looking for villager");
 				for (Villager villager : getVillagersAtLocation(location)) {
-					System.out.println("Villager found : "+villager.getProfession());
-					if (villager.getProfession() == null) {
+					//System.out.println("Villager found : "+villager.getProfession());
+					//if ((villager.getProfession() == null) || (villager.getProfession().equals(Villager.Profession.FARMER))) {
 						villager.setProfession(fb.profession);
-					}
+					//}
+					//System.out.println("Villager -> "+villager.getProfession());
 				}
 			}
 		}
@@ -76,7 +77,7 @@ public class ProfessionListener implements Listener {
 			Entity[] cEntities = chunk.getEntities();
 
 			for (Entity ent : cEntities) {
-				if ((ent instanceof Villager) && (ent.getLocation().getBlock().equals(inputLocation.getBlock()))) {
+				if ((ent instanceof Villager) && (ent.getLocation().distance(inputLocation) < 1.5)) {
 					entities.add((Villager)ent);
 				}
 			}

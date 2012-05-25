@@ -58,7 +58,7 @@ public class Profession extends JavaPlugin {
 		for (String s : professionSetS.keySet()) {
 			Location l = convertString(s);
 
-			this.professionMap.put(l, new ProfessionBlock(null, professionSetS.get(l)));
+			this.professionMap.put(l, new ProfessionBlock(null, professionSetS.get(s)));
 		}
 
 		getLogger().info(professionMap.size() + " professions");
