@@ -28,50 +28,24 @@ public class Allocator extends JavaPlugin {
 	// Properties
 	Map<Location, AllocatorBlock> allocatorMap = new HashMap<Location, AllocatorBlock>();
 	public boolean allowFiltering = true;
-	public int quantityDropped = 2;
+	public int quantityDropped = -1;
 	public boolean quantityIsStack = true;
+	public int reloadEveryMinutes = -1;
 
 	// Constant
 	Material BLOCK_TYPE = Material.PUMPKIN;
 
 	public void onDisable() {
-		// reload the config
-		reloadConfig();
-
-		// Contruct the datas
-		Map<String, String> allocatorMapS = new HashMap<String, String>();
-		for (Location l : this.allocatorMap.keySet()) {
-			allocatorMapS.put(convertLocation(l), this.allocatorMap.get(l).paramToText());
-		}
-		String allocators = new Yaml().dump(allocatorMapS);
-
-		// if data change, update and save
-		if (!allocators.equals(getConfig().getString("data", "{}"))) {
-			getConfig().set("data", allocators);
-
-			saveConfig();
-		}
+		saveDatas();
 	}
 
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(this.thelistener, this);
 
-		@SuppressWarnings("unchecked")
-		HashMap<String, String> allocatorMapS = (HashMap<String, String>) new Yaml().loadAs(getConfig().getString("data", "{}"), HashMap.class);
-		for (String s : allocatorMapS.keySet()) {
-			Location l = convertString(s);
-			Block b = l.getBlock();
-			this.allocatorMap.put(l, AllocatorBlock.fromBlockAndParamString(b, allocatorMapS.get(s)));
-		}
+		loadDatas();
 
-		allowFiltering = getConfig().getBoolean("allowFiltering", true);
-		quantityDropped = getConfig().getInt("quantityDropped", 1);
-		quantityIsStack = getConfig().getBoolean("quantityIsStack", true);
+		getServer().getScheduler().scheduleAsyncRepeatingTask(this, new DataReloader(), 10000L, 10000L);
 
-		getLogger().info(allocatorMap.size() + " allocators");
-		getLogger().info("allowFiltering  = " + allowFiltering);
-		getLogger().info("quantityDropped = " + quantityDropped);
-		getLogger().info("quantityIsStack = " + quantityIsStack);
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
@@ -109,6 +83,7 @@ public class Allocator extends JavaPlugin {
 					// Create a new Allocator
 					AllocatorBlock al = setNewAllocator(block, args, player);
 					player.sendMessage(ChatColor.GREEN + "Allocator added ! (" + al + ")");
+					saveDatas();
 
 					return true;
 				}
@@ -122,6 +97,14 @@ public class Allocator extends JavaPlugin {
 					// Change the Allocator
 					AllocatorBlock al = setNewAllocator(block, args, player);
 					player.sendMessage(ChatColor.GREEN + "Allocator modified ! (" + al + ")");
+					saveDatas();
+
+					return true;
+				}
+				// Load configuration
+				if (args[0].equalsIgnoreCase("reload")) {
+					loadDatas();
+					player.sendMessage(ChatColor.GREEN + "" + allocatorMap.size() + " allocators reloaded");
 
 					return true;
 				}
@@ -236,7 +219,7 @@ public class Allocator extends JavaPlugin {
 				// System.out.println(ent.getLocation().getBlock().equals(inputLocation.getBlock())+" "+ent.getLocation().distance(inputLocation));
 				// }
 				if (ent.getLocation().getBlock().equals(inputLocation.getBlock())) {
-					//System.out.println("found "+ent.getClass().getName());
+					// System.out.println("found "+ent.getClass().getName());
 					entities.add(ent);
 				}
 			}
@@ -253,36 +236,36 @@ public class Allocator extends JavaPlugin {
 	 * @return
 	 */
 	public static StorageMinecart getMinecartAtLocation(Location inputLocation) {
-		
+
 		// First look at the right location
 		List<Entity> entities = getEntitiesAtLocation(inputLocation);
-		
+
 		for (Entity e : entities) {
 			if (e instanceof StorageMinecart) {
-				//System.out.println("BLOCK");
+				// System.out.println("BLOCK");
 				return (StorageMinecart) e;
 			}
 		}
-		
+
 		// not found
 		Block b = inputLocation.getBlock();
 		if (b.getType().equals(Material.DETECTOR_RAIL) && b.isBlockIndirectlyPowered()) {
-			//System.out.println("NORTH");
+			// System.out.println("NORTH");
 			StorageMinecart s = getMinecartAtLocation(b.getRelative(BlockFace.NORTH).getLocation());
 			if (s != null) {
 				return s;
 			}
-			//System.out.println("SOUTH");
+			// System.out.println("SOUTH");
 			s = getMinecartAtLocation(b.getRelative(BlockFace.SOUTH).getLocation());
 			if (s != null) {
 				return s;
 			}
-			//System.out.println("EAST");
+			// System.out.println("EAST");
 			s = getMinecartAtLocation(b.getRelative(BlockFace.EAST).getLocation());
 			if (s != null) {
 				return s;
 			}
-			//System.out.println("WEST");
+			// System.out.println("WEST");
 			s = getMinecartAtLocation(b.getRelative(BlockFace.WEST).getLocation());
 			if (s != null) {
 				return s;
@@ -316,6 +299,90 @@ public class Allocator extends JavaPlugin {
 		TRANSPARENT.add((byte) Material.TORCH.getId());
 		TRANSPARENT.add((byte) Material.WOOD_PLATE.getId());
 		TRANSPARENT.add((byte) Material.STONE_PLATE.getId());
+	}
+
+	/**
+	 * save Datas to configuration file
+	 */
+	public void saveDatas() {
+		// reload the config
+		reloadConfig();
+
+		// Contruct the datas
+		Map<String, String> allocatorMapS = new HashMap<String, String>();
+		for (Location l : this.allocatorMap.keySet()) {
+			allocatorMapS.put(convertLocation(l), this.allocatorMap.get(l).paramToText());
+		}
+		String allocators = new Yaml().dump(allocatorMapS);
+
+		// if data change, update and save
+		if (!allocators.equals(getConfig().getString("data", "{}"))) {
+			getConfig().set("data", allocators);
+
+			saveConfig();
+		}
+	}
+
+	/**
+	 * load Datas from configuration file (if needed)
+	 */
+	private void loadDatas() {
+
+		// reload the config
+		reloadConfig();
+
+		int oldAllocatorMapSize = allocatorMap.size();
+		boolean oldAllowFiltering = allowFiltering;
+		int oldQuantityDropped = quantityDropped;
+		boolean oldQuantityIsStack = quantityIsStack;
+		int oldReloadEveryMinutes = reloadEveryMinutes;
+
+		@SuppressWarnings("unchecked")
+		HashMap<String, String> allocatorMapS = (HashMap<String, String>) new Yaml().loadAs(getConfig().getString("data", "{}"), HashMap.class);
+		for (String s : allocatorMapS.keySet()) {
+			Location l = convertString(s);
+			Block b = l.getBlock();
+			this.allocatorMap.put(l, AllocatorBlock.fromBlockAndParamString(b, allocatorMapS.get(s)));
+		}
+
+		allowFiltering = getConfig().getBoolean("allowFiltering", true);
+		quantityDropped = getConfig().getInt("quantityDropped", 1);
+		quantityIsStack = getConfig().getBoolean("quantityIsStack", true);
+		reloadEveryMinutes = getConfig().getInt("reloadEveryMinutes", 10);
+
+		String message = "";
+		if (oldAllocatorMapSize != allocatorMap.size()) {
+			message += ", " + allocatorMap.size() + " allocators";
+		}
+		if (oldAllowFiltering != allowFiltering) {
+			message += ", " + (allowFiltering ? "Filter allowed" : "Filter not allowed");
+		}
+		if ((oldQuantityDropped != quantityDropped) || (oldQuantityIsStack != quantityIsStack)) {
+			message += ", " + "Limited to " + quantityDropped + (quantityIsStack ? " stack(s) " : " item(s)");
+		}
+		if (oldReloadEveryMinutes != reloadEveryMinutes) {
+			message += ", " + "Reload every " + reloadEveryMinutes + " minute(s)";
+		}
+		if (message.length() != 0) {
+			getLogger().info("Configuration reloaded.  (" + message.replaceAll("^, ", "") + ")");
+		}
+	}
+
+	/**
+	 * Class to reload the configuration
+	 * 
+	 */
+	long lastReload = System.currentTimeMillis();
+
+	private final class DataReloader implements Runnable {
+		public void run() {
+			long now = System.currentTimeMillis();
+
+			if ((now - lastReload) > reloadEveryMinutes * 60 * 1000) {
+				loadDatas();
+				lastReload = now;
+			}
+		}
 	}
 
 }

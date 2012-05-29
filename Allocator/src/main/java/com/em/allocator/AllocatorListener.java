@@ -50,6 +50,7 @@ public class AllocatorListener implements Listener {
 			// Remove it from the list
 			this.thePlugin.allocatorMap.remove(event.getBlock().getLocation());
 			event.getPlayer().sendMessage(ChatColor.GREEN + "Allocator removed!");
+			this.thePlugin.saveDatas();
 		}
 	}
 
