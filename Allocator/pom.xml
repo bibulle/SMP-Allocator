@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.em.allocator</groupId>
   <artifactId>Allocator</artifactId>
-  <version>0.5</version>
+  <version>0.5.1-SNAPSHOT</version>
   
   <repositories>
      <repository>
