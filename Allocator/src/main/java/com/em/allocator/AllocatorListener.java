@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -61,14 +62,14 @@ public class AllocatorListener implements Listener {
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
 		// if it's a Allocator
 		if (this.thePlugin.allocatorMap.containsKey(event.getBlock().getLocation())) {
-			//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ());
+			// System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ()+" "+event.getNewCurrent());
 			// Just do the job
 			AllocatorBlock al = this.thePlugin.allocatorMap.get(event.getBlock().getLocation());
 			if ((al.getPower() == 0) && (event.getNewCurrent() > 0)) {
 
-				//System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ()+" -> "+event.getNewCurrent());
+				// System.out.println("BlockRedstoneEvent "+event.getBlock().getX()+" "+event.getBlock().getY()+" "+event.getBlock().getZ()+" -> "+event.getNewCurrent());
 				// it is powered
-				//Bukkit.getLogger().info("Powered !! " + al);
+				// Bukkit.getLogger().info("Powered !! " + al);
 
 				// If no... do the job
 				allocateItems(event, new Random());
@@ -76,7 +77,7 @@ public class AllocatorListener implements Listener {
 			}
 
 			al.setPower(event.getNewCurrent());
-			//System.out.println("New power : "+al+" -> "+al.power);
+			// System.out.println("New power : "+al+" -> "+al.power);
 		}
 	}
 
@@ -85,47 +86,58 @@ public class AllocatorListener implements Listener {
 	 */
 	private void allocateItems(BlockRedstoneEvent event, Random random) {
 		Block b = event.getBlock();
-		AllocatorBlock al = this.thePlugin.allocatorMap.get(b.getLocation());
-		
+		List<AllocatorBlock> alLst = new ArrayList<AllocatorBlock>();
+		alLst.add(this.thePlugin.allocatorMap.get(b.getLocation()));
+
 		// get filter
-		//Material filter = al.filter;
-		//BlockFace face = al.face;
+		// Material filter = al.filter;
+		// BlockFace face = al.face;
 
 		// list of item to allocate and corresponding remover
 		List<ItemAllocatable> inputItems = new ArrayList<ItemAllocatable>();
 
 		// get direction of Input
-		int dx = getDirectionX(al.getFace());
-		int dy = getDirectionY(al.getFace());
-		int dz = getDirectionZ(al.getFace());
+		int dx = getDirectionX(alLst.get(0).getFace());
+		int dy = getDirectionY(alLst.get(0).getFace());
+		int dz = getDirectionZ(alLst.get(0).getFace());
 
-		InventoryHolder inputContainer = getContainer(b, dx, dy, dz);
+		fillAllocatorsList(alLst, dx, dy, dz, true);
+		fillAllocatorsList(alLst, dx, dy, dz, false);
+		//if (alLst.size() > 1) {
+		//	for (AllocatorBlock allocatorBlock : alLst) {
+		//		Bukkit.getLogger().info("allocatorBlock " + allocatorBlock + " " + allocatorBlock.getLocation());
+		//	}
+		//	Bukkit.getLogger().info("------");
+		//}
+
+		InventoryHolder inputContainer = getContainer(alLst.get(alLst.size() - 1), dx, dy, dz);
+		//Bukkit.getLogger().info("inputContainer " + inputContainer);
 
 		// No Input-Container (get dropped items)
 		if ((inputContainer == null) || (inputContainer.getInventory() == null)) {
 			Location inputLocation = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
-			inputItems = AllocatorInput.getRandomItemFromDropped(b.getWorld(), inputLocation, al, thePlugin);
+			inputItems = AllocatorInput.getRandomItemFromDropped(b.getWorld(), inputLocation, alLst, thePlugin);
 
 			// Input-Container
 		} else {
-			inputItems = AllocatorInput.getRandomItemFromContainer(inputContainer, random, b, al, thePlugin);
+			inputItems = AllocatorInput.getRandomItemFromContainer(inputContainer, random, b, alLst, thePlugin);
 		}
-		// Bukkit.getLogger().info(inputItems.size() +
-		// " Items to be transfered : "+inputItems);
+		//Bukkit.getLogger().info(inputItems.size() + " Items to be transfered : " + inputItems);
 
-		InventoryHolder outputContainer = getContainer(b, -dx, -dy, -dz);
-		
-		// No Output-Container (get dropped items)
+		InventoryHolder outputContainer = getContainer(alLst.get(0), -dx, -dy, -dz);
+		//Bukkit.getLogger().info("outputContainer " + outputContainer);
+
+		// // No Output-Container (get dropped items)
 		if (outputContainer == null) {
-			Location outputLocation = b.getLocation().add(0.5D - dx, 0.5D - dy, 0.5D - dz);
-			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation, al, thePlugin);
+		 Location outputLocation = b.getLocation().add(0.5D - dx, 0.5D - dy, 0.5D - dz);
+			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation, alLst.get(0), thePlugin);
 
 			// Output-Container
 		} else {
 			if (outputContainer instanceof Furnace) {
-				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer, inputContainer, al, thePlugin);
-			} else if (outputContainer.getInventory() != null){
-				AllocatorOutput.outputItemToContainer(inputItems, outputContainer, inputContainer, al, thePlugin);
+				AllocatorOutput.outputItemToFurnace(inputItems, (Furnace) outputContainer, inputContainer, alLst.get(0), thePlugin);
+			} else if (outputContainer.getInventory() != null) {
+				AllocatorOutput.outputItemToContainer(inputItems, outputContainer, inputContainer, alLst.get(0), thePlugin);
 			}
 		}
 
@@ -134,28 +146,30 @@ public class AllocatorListener implements Listener {
 	/**
 	 * Get the Container (or null if none.. dropped items)
 	 * 
-	 * @param b
+	 * @param allocatorBlock
 	 * @param dx
 	 * @param dy
 	 * @param dz
 	 * @param inputLocation
 	 * @return
 	 */
-	private InventoryHolder getContainer(Block b, int dx, int dy, int dz) {
+	private InventoryHolder getContainer(AllocatorBlock allocatorBlock, int dx, int dy, int dz) {
 
 		InventoryHolder container = null;
 
+		Block block = allocatorBlock.getLocation().getBlock();
+
 		// get container :chest, ...
-		Block target = b.getRelative(dx, dy, dz);
+		Block target = block.getRelative(dx, dy, dz);
 		BlockState craftB = target.getState();
 		if (craftB instanceof InventoryHolder) {
 			container = (InventoryHolder) craftB;
 		} else {
 			// Search for storage mine cart and such
-			Location location = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
+			Location location = block.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
 			container = Allocator.getMinecartAtLocation(location);
 		}
-		
+
 		// avoid dropping to rail
 		if (container == null) {
 			if ((target.getType() == Material.RAILS) || (target.getType() == Material.DETECTOR_RAIL) || (target.getType() == Material.POWERED_RAIL)) {
@@ -168,6 +182,31 @@ public class AllocatorListener implements Listener {
 		}
 
 		return container;
+	}
+
+	private void fillAllocatorsList(List<AllocatorBlock> alLst, int dx, int dy, int dz, boolean up) {
+		if ((alLst == null) || (alLst.isEmpty())) {
+			return;
+		}
+
+		if (up) {
+			AllocatorBlock al = alLst.get(alLst.size() - 1);
+			Location l = al.getLocation().clone();
+			l.add(dx, dy, dz);
+			if (this.thePlugin.allocatorMap.containsKey(l)) {
+				alLst.add(this.thePlugin.allocatorMap.get(l));
+				fillAllocatorsList(alLst, dx, dy, dz, up);
+			}
+		} else {
+			AllocatorBlock al = alLst.get(0);
+			Location l = al.getLocation().clone();
+			l.add(-dx, -dy, -dz);
+			if (this.thePlugin.allocatorMap.containsKey(l)) {
+				alLst.add(0, this.thePlugin.allocatorMap.get(l));
+				fillAllocatorsList(alLst, dx, dy, dz, up);
+			}
+		}
+
 	}
 
 	/**
