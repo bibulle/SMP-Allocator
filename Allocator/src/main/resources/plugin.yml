@@ -1,6 +1,6 @@
 name: Allocator
 main: com.em.allocator.Allocator
-version: 0.1
+version: 0.6
 commands:
  allocator:
   description: Defines an allocator.

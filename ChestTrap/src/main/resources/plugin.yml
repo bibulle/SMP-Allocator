@@ -1,6 +1,6 @@
 name: ChestTrap
 main: com.em.chesttrap.ChestTrap
-version: 0.1
+version: 0.6
 commands:
  chesttrap:
   description: Defines an Chest Trap.
