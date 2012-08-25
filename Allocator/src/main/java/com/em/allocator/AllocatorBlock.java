@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 public class AllocatorBlock {
 
 	private Location location;
+
 	public int getPower() {
 		return power;
 	}
@@ -28,13 +29,20 @@ public class AllocatorBlock {
 		return filters;
 	}
 
+	public List<Material> getNonFilters() {
+		return nonFilters;
+	}
+
 	public BlockFace getFace() {
 		return face;
 	}
 
 	private List<Material> filters;
+	private List<Material> nonFilters;
 	private BlockFace face;
 	private int power;
+
+	public static final String NON_KEY = "NON_";
 
 	/**
 	 * Create a new Allocator
@@ -46,7 +54,7 @@ public class AllocatorBlock {
 	 * @param face
 	 *          the face
 	 */
-	public AllocatorBlock(Block block, List<Material> filters, BlockFace face) {
+	public AllocatorBlock(Block block, List<Material> filters, List<Material> nonFilters, BlockFace face) {
 		this.location = block.getLocation();
 		this.power = block.getBlockPower();
 
@@ -58,6 +66,14 @@ public class AllocatorBlock {
 		}
 		this.filters = filters;
 
+		if (nonFilters == null) {
+			nonFilters = new ArrayList<Material>();
+		}
+		while ((nonFilters.size() != 1) && nonFilters.contains(Material.AIR)) {
+			nonFilters.remove(Material.AIR);
+		}
+		this.nonFilters = nonFilters;
+
 		this.face = face;
 		setFace(block, face);
 
@@ -67,6 +83,8 @@ public class AllocatorBlock {
 		boolean ret = filters.isEmpty();
 
 		ret = ret || ((filters.size() == 1) && filters.contains(Material.AIR));
+
+		ret = ret && nonFilters.isEmpty();
 
 		return ret;
 	}
@@ -87,7 +105,13 @@ public class AllocatorBlock {
 				} else {
 					ret += "|" + m;
 				}
-
+			}
+			for (Material m : nonFilters) {
+				if (ret.length() == 0) {
+					ret += NON_KEY + m;
+				} else {
+					ret += "|" + NON_KEY + m;
+				}
 			}
 			return ret;
 		}
@@ -99,12 +123,33 @@ public class AllocatorBlock {
 	 * @return
 	 */
 	public static List<Material> filtersFromString(String filtersS) {
-		
+
 		List<Material> ret = new ArrayList<Material>();
-		
+
 		String[] filtersArray = filtersS.split("[|]");
 		for (String string : filtersArray) {
-			ret.add(Material.valueOf(string));
+			if (!string.startsWith(NON_KEY)) {
+				ret.add(Material.valueOf(string));
+			}
+		}
+
+		return ret;
+	}
+
+	/**
+	 * Translate nonFilters from String
+	 * 
+	 * @return
+	 */
+	public static List<Material> nonFiltersFromString(String filtersS) {
+
+		List<Material> ret = new ArrayList<Material>();
+
+		String[] filtersArray = filtersS.split("[|]");
+		for (String string : filtersArray) {
+			if (string.startsWith(NON_KEY)) {
+				ret.add(Material.valueOf(string.substring(NON_KEY.length())));
+			}
 		}
 
 		return ret;
@@ -126,8 +171,8 @@ public class AllocatorBlock {
 	 */
 	public static AllocatorBlock fromBlockAndParamString(Block block, String paramString) {
 		String[] args = paramString.split(",");
-		//System.out.println(args.length+"'"+paramString+"'");
-		return new AllocatorBlock(block, filtersFromString(args[0]), BlockFace.valueOf(args[1]));
+		// System.out.println(args.length+"'"+paramString+"'");
+		return new AllocatorBlock(block, filtersFromString(args[0]), nonFiltersFromString(args[0]), BlockFace.valueOf(args[1]));
 	}
 
 	@Override
@@ -137,6 +182,9 @@ public class AllocatorBlock {
 			ret = "filter :";
 			for (Material m : filters) {
 				ret += " " + m;
+			}
+			for (Material m : nonFilters) {
+				ret += " " + NON_KEY + m;
 			}
 		}
 		return ret + ", facing : " + face;
@@ -209,7 +257,17 @@ public class AllocatorBlock {
 	 * @return
 	 */
 	public boolean isPassingFilter(ItemStack itemStack) {
-		return hasNoFilter() || getFilters().contains(itemStack.getType());
+		Material mat = itemStack.getType();
+		if (hasNoFilter()) {
+			return true;
+		}
+		if (getFilters().contains(mat)) {
+			return true;
+		}
+		if (!getNonFilters().contains(mat)) {
+			return true;
+		}
+		return false;
 	}
 
 }

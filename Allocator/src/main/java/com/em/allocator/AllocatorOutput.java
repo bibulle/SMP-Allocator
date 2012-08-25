@@ -197,9 +197,11 @@ public class AllocatorOutput {
 
 					// check if there is empty stack to prepare for other filter
 					if (checkIfMaterialRefused(itemAllocatable, outputContainer, al, materialAlreadyRefused)) {
+						//Bukkit.getLogger().info("Really refused");
 						continue;
 					}
 
+					//Bukkit.getLogger().info("NOT Really refused");
 					// add the stack
 					ItemStack item = itemAllocatable.getTheItemStack().clone();
 					item.setAmount(1);
@@ -249,18 +251,21 @@ public class AllocatorOutput {
 		if (materialAlreadyRefused.contains(itemAllocatable.getType())) {
 			return true;
 		}
-		// System.out.println("----" + al.hasNoFilter()+" "+
-		// al.getFilters().size());
-		if (!al.hasNoFilter() && (al.getFilters().size() != 1)) {
+		// System.out.println("----" + al.hasNoFilter()+" "+al.getFilters().size());
+		// if (!al.hasNoFilter() && (al.getFilters().size() != 1)) {
+		if (!al.hasNoFilter()) {
 			List<Material> filters = new ArrayList<Material>();
+			List<Material> non_filters = new ArrayList<Material>();
 			for (Material material : al.getFilters()) {
 				filters.add(material);
 			}
-			int empty = 0;
-			// System.out.println(filters);
-			// Search for each stack in the directories (a filter or an empty
-			// stack)
-			for (int i = 0; (i < outputContainer.getInventory().getContents().length) && (empty <= filters.size()); i++) {
+			for (Material material : al.getNonFilters()) {
+				non_filters.add(material);
+			}
+			int empty = -1;
+			//System.out.println(filters+" "+non_filters);
+			// Search for each stack in the directories (a filter or an empty stack)
+			for (int i = outputContainer.getInventory().getContents().length -1; (i >= 0 ) && (empty < filters.size()+1); i--) {
 				// System.out.println(empty +" "+filters);
 				ItemStack anItemStack = outputContainer.getInventory().getContents()[i];
 				if (anItemStack == null) {
@@ -269,15 +274,28 @@ public class AllocatorOutput {
 					if (filters.contains(anItemStack.getType())) {
 						filters.remove(anItemStack.getType());
 					}
+					if (!non_filters.contains(anItemStack.getType())) {
+						non_filters.clear();
+					}
 				}
 			}
-			// System.out.println("##"+empty +" "+filters);
+			//System.out.println("##"+empty +" "+filters+" "+non_filters);
+			int neededSpace = filters.size();
+			if (!non_filters.isEmpty() && non_filters.contains(itemAllocatable.getType())) {
+				neededSpace++;
+			}
+			if (filters.contains(itemAllocatable.getType())) {
+				neededSpace--;
+			}
 			// If there is no enough empty stack, do not transfer
-			if ((empty < filters.size()) || ((empty == filters.size()) && !filters.contains(itemAllocatable.getType()))) {
+			//Bukkit.getLogger().info(empty+"?"+neededSpace);
+			if (empty < neededSpace) {
 				materialAlreadyRefused.add(itemAllocatable.getType());
+				//Bukkit.getLogger().info(itemAllocatable.getType()+" refused");
 				return true;
 			}
 		}
+		//Bukkit.getLogger().info(itemAllocatable.getType()+" accepted");
 		return false;
 	}
 
@@ -400,12 +418,12 @@ public class AllocatorOutput {
 			// System.out.println("--- Items " + stackDropped.size() + "->" +
 			// dropped);
 		} else {
-			//System.out.println("--- Stack " + stackDropped.size());
+			// System.out.println("--- Stack " + stackDropped.size());
 			// In case of stack filter, try to add it in stackDropped count
 			for (ItemStack droppedItemStack : stackDropped) {
 				// try to add it into the dropped stack
-				 //System.out.println(droppedItemStack.getAmount()+" "+is.getMaxStackSize());
-				if (canBeStacked(is,droppedItemStack)) {
+				// System.out.println(droppedItemStack.getAmount()+" "+is.getMaxStackSize());
+				if (canBeStacked(is, droppedItemStack)) {
 					droppedItemStack.setAmount(droppedItemStack.getAmount() + 1);
 					dropped = true;
 				}
