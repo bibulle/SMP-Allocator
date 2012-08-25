@@ -8,6 +8,9 @@ import org.bukkit.inventory.ItemStack;
 
 public class ChestTrapContent {
 
+	// Sort for this chesttrap
+	private SortType sort = SortType.NONE;
+
 	// list of item in the inventory
 	private HashMap<Material, Integer> inventoryContent = new HashMap<Material, Integer>();
 
@@ -19,7 +22,7 @@ public class ChestTrapContent {
 		this.inventoryContent = inventoryContent;
 	}
 
-	public ChestTrapContent(Inventory inventory) {
+	public ChestTrapContent(Inventory inventory, String sortS) {
 
 		for (ItemStack itemStack : inventory) {
 			if (itemStack == null) {
@@ -36,8 +39,13 @@ public class ChestTrapContent {
 
 		}
 
+		try {
+			sort = SortType.valueOf(sortS);
+		} catch (IllegalArgumentException e) {
+		}
+
 	}
-	
+
 	private int getAmount(Material material) {
 		if (inventoryContent.get(material) == null) {
 			return 0;
@@ -54,19 +62,19 @@ public class ChestTrapContent {
 	 * @return true if modified
 	 */
 	public boolean changeInventory(Inventory inventory) {
-		
-		ChestTrapContent newChest = new ChestTrapContent(inventory);
-		
+
+		ChestTrapContent newChest = new ChestTrapContent(inventory, sort.toString());
+
 		for (Material material : newChest.getInventoryContent().keySet()) {
 			if (newChest.getAmount(material) != this.getAmount(material)) {
-				//System.out.println(material+" "+this.getAmount(material)+"->"+newChest.getAmount(material));
+				// System.out.println(material+" "+this.getAmount(material)+"->"+newChest.getAmount(material));
 				setInventoryContent(newChest.getInventoryContent());
 				return true;
 			}
 		}
 		for (Material material : this.getInventoryContent().keySet()) {
 			if (newChest.getAmount(material) != this.getAmount(material)) {
-				//System.out.println(material+" "+this.getAmount(material)+"->"+newChest.getAmount(material));
+				// System.out.println(material+" "+this.getAmount(material)+"->"+newChest.getAmount(material));
 				setInventoryContent(newChest.getInventoryContent());
 				return true;
 			}
@@ -77,23 +85,44 @@ public class ChestTrapContent {
 
 	/**
 	 * Display the content of the chest
+	 * 
 	 * @return
 	 */
 	public String contentToText() {
 		String ret = "";
-		
+
 		for (Material material : inventoryContent.keySet()) {
 			if (ret.length() != 0) {
-				ret+= " ";
+				ret += " ";
 			}
-			ret += material.toString().toLowerCase()+":"+inventoryContent.get(material);
+			ret += material.toString().toLowerCase() + ":" + inventoryContent.get(material);
 		}
-		
+
 		if (ret.length() == 0) {
 			ret = "empty";
 		}
-		
+
 		return ret;
+	}
+
+	public SortType getSort() {
+		return sort;
+	}
+
+	public void setSort(SortType sort) {
+		this.sort = sort;
+	}
+
+	enum SortType {
+		NONE, SIMPLE, LINE, COL;
+
+		public String toString() {
+			if (this == NONE) {
+				return "";
+			} else {
+				return super.toString();
+			}
+		};
 	}
 
 }

@@ -18,6 +18,8 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
+import com.em.chesttrap.ChestTrapContent.SortType;
+
 public class ChestTrap extends JavaPlugin {
 
 	ChestTrapListener thelistener = new ChestTrapListener(this);
@@ -34,13 +36,20 @@ public class ChestTrap extends JavaPlugin {
 	}
 
 	public void onDisable() {
-		// reload the config
+		saveDatas();
+	}
+
+	/**
+	 * save Datas to configuration file
+	 */
+	private void saveDatas() {
+		// reload the configuration
 		reloadConfig();
 
-		// Contruct the datas
+		// Construct the data
 		Map<String, String> chestMapS = new HashMap<String, String>();
 		for (Location l : this.chestMap.keySet()) {
-			chestMapS.put(convertLocation(l), "");
+			chestMapS.put(convertLocation(l), this.chestMap.get(l).getSort().toString());
 		}
 		String chests = new Yaml().dump(chestMapS);
 
@@ -60,12 +69,13 @@ public class ChestTrap extends JavaPlugin {
 		HashMap<String, String> chestMapS = (HashMap<String, String>) new Yaml().loadAs(getConfig().getString("data", "{}"), HashMap.class);
 		for (String s : chestMapS.keySet()) {
 			Location l = convertString(s);
+			String sortS = chestMapS.get(s);
 			
 			BlockState blockState = l.getBlock().getState();
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
 			
-			this.chestMap.put(l, new ChestTrapContent(ih.getInventory()));
+			this.chestMap.put(l, new ChestTrapContent(ih.getInventory(), sortS));
 			}
 		}
 
@@ -85,7 +95,13 @@ public class ChestTrap extends JavaPlugin {
 				return true;
 			}
 			if (this.chestMap.containsKey(block.getLocation())) {
-				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap "+ChatColor.GREEN +"("+this.chestMap.get(block.getLocation()).contentToText()+")");
+				ChestTrapContent content = this.chestMap.get(block.getLocation());
+				String sorterS = "Sort : "+content.getSort()+", ";
+				content.getSort();
+				if (content.getSort() == SortType.NONE) {
+					sorterS = "No sort, ";
+				}
+				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap "+ChatColor.GREEN +"("+sorterS+content.contentToText()+")");
 				return true;
 			}
 
@@ -93,7 +109,12 @@ public class ChestTrap extends JavaPlugin {
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
 			
-				this.chestMap.put(block.getLocation(), new ChestTrapContent(ih.getInventory()));
+				String sortS = "";
+				if (args.length != 0) {
+					sortS = args[0].toUpperCase();
+				}
+				this.chestMap.put(block.getLocation(), new ChestTrapContent(ih.getInventory(), sortS));
+				saveDatas();
 			}
 
 			sender.sendMessage(ChatColor.GREEN + "Chesttrap created");
