@@ -18,8 +18,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.Yaml;
 
-import com.em.chesttrap.ChestTrapContent.SortType;
-
 public class ChestTrap extends JavaPlugin {
 
 	ChestTrapListener thelistener = new ChestTrapListener(this);
@@ -62,7 +60,7 @@ public class ChestTrap extends JavaPlugin {
 	}
 
 	public void onEnable() {
-		
+
 		getServer().getPluginManager().registerEvents(this.thelistener, this);
 
 		@SuppressWarnings("unchecked")
@@ -70,12 +68,12 @@ public class ChestTrap extends JavaPlugin {
 		for (String s : chestMapS.keySet()) {
 			Location l = convertString(s);
 			String sortS = chestMapS.get(s);
-			
+
 			BlockState blockState = l.getBlock().getState();
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
-			
-			this.chestMap.put(l, new ChestTrapContent(ih.getInventory(), sortS));
+
+				this.chestMap.put(l, new ChestTrapContent(ih.getInventory(), sortS));
 			}
 		}
 
@@ -89,35 +87,44 @@ public class ChestTrap extends JavaPlugin {
 		try {
 			Player player = (Player) sender;
 			Block block = getPlayerTargetBlock(player);
-			
+
+			// Wrong pointed block
 			if (!BLOCK_TYPES.contains(block.getType())) {
-				sender.sendMessage(ChatColor.RED + "This "+block.getType().toString().toLowerCase()+"is not in the list : " + getBlockTypesAsString());
+				sender.sendMessage(ChatColor.RED + "This " + block.getType().toString().toLowerCase() + "is not in the list : " + getBlockTypesAsString());
 				return true;
 			}
+			
+			// Already a chestTrap
 			if (this.chestMap.containsKey(block.getLocation())) {
 				ChestTrapContent content = this.chestMap.get(block.getLocation());
-				String sorterS = "Sort : "+content.getSort()+", ";
-				content.getSort();
-				if (content.getSort() == SortType.NONE) {
-					sorterS = "No sort, ";
+
+				// Change "sort" if needed
+				String sortS = "";
+				if (args.length != 0) {
+					sortS = args[0].toUpperCase();
 				}
-				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap "+ChatColor.GREEN +"("+sorterS+content.contentToText()+")");
+				content.setSort(sortS);
+
+				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap " + ChatColor.GREEN + "(" + content.getSortLabel() + ", "
+						+ content.contentToText() + ")");
 				return true;
 			}
 
+			// Create a chestTrap
 			BlockState blockState = block.getState();
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
-			
+
 				String sortS = "";
 				if (args.length != 0) {
 					sortS = args[0].toUpperCase();
 				}
 				this.chestMap.put(block.getLocation(), new ChestTrapContent(ih.getInventory(), sortS));
 				saveDatas();
+
+				sender.sendMessage(ChatColor.GREEN + "Chesttrap created ("+this.chestMap.get(block.getLocation()).getSortLabel()+")");
 			}
 
-			sender.sendMessage(ChatColor.GREEN + "Chesttrap created");
 		} catch (ClassCastException e) {
 			sender.sendMessage("You can only use this command as a player!");
 		}
@@ -137,25 +144,27 @@ public class ChestTrap extends JavaPlugin {
 		String[] parts = s.split(",");
 		return new Location(getServer().getWorld(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
 	}
-	
+
 	/**
 	 * Get list of allowed block as String (to be trace of put in messaged)
+	 * 
 	 * @return
 	 */
 	String getBlockTypesAsString() {
 		String ret = "";
-		
+
 		for (Material m : BLOCK_TYPES) {
-			ret += ", "+m.toString().toLowerCase();
+			ret += ", " + m.toString().toLowerCase();
 		}
-		
+
 		ret.replaceFirst(", ", "");
-		
+
 		return ret;
 	}
-	
+
 	/**
 	 * Get the targeted Block
+	 * 
 	 * @param player
 	 * @return
 	 */
@@ -163,6 +172,7 @@ public class ChestTrap extends JavaPlugin {
 		Block block = player.getTargetBlock(TRANSPARENT, 5);
 		return block;
 	}
+
 	// define transparent blocks id
 	private static final HashSet<Byte> TRANSPARENT = new HashSet<Byte>();
 	static {
@@ -175,6 +185,5 @@ public class ChestTrap extends JavaPlugin {
 		TRANSPARENT.add((byte) Material.REDSTONE_WIRE.getId());
 		TRANSPARENT.add((byte) Material.TORCH.getId());
 	}
-
 
 }

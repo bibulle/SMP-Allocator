@@ -113,8 +113,28 @@ public class ChestTrapContent {
 		this.sort = sort;
 	}
 
+	public void setSort(String sortS) {
+		try {
+			setSort(SortType.valueOf(sortS));
+		} catch (IllegalArgumentException e) {
+		}
+	}
+
+	String getSortLabel() {
+		String sorterS = "Sort : "+getSort();
+		getSort();
+		if (getSort() == SortType.NONE) {
+			sorterS = "No sort";
+		}
+		return sorterS;
+	}
+
 	enum SortType {
-		NONE, SIMPLE, LINE, COL;
+		NONE, 
+		SIMPLE, 
+		//LINE, 
+		//COL
+		;
 
 		public String toString() {
 			if (this == NONE) {

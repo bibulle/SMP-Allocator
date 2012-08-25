@@ -223,12 +223,13 @@ public class ChestTrapListener implements Listener {
 							ih.getInventory().clear(cpt);
 							cpt++;
 						}
-					} else if ((chestTrapContent.getSort() == SortType.LINE) && (ih.getInventory().getType() == InventoryType.CHEST)) {
-						// TODO : not yet implemented
-						//int col = 9;
-						//int line = ih.getInventory().getSize() / col;
-						// Bukkit.getLogger().info("" + col+", "+line);
 					}
+					// TODO : not yet implemented
+					// if ((chestTrapContent.getSort() == SortType.LINE) && (ih.getInventory().getType() == InventoryType.CHEST)) {
+					// int col = 9;
+					// int line = ih.getInventory().getSize() / col;
+					// Bukkit.getLogger().info("" + col+", "+line);
+					// }
 
 				}
 			}
