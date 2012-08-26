@@ -264,7 +264,7 @@ public class AllocatorBlock {
 		if (getFilters().contains(mat)) {
 			return true;
 		}
-		if (!getNonFilters().contains(mat)) {
+		if (!getNonFilters().isEmpty() && !getNonFilters().contains(mat)) {
 			return true;
 		}
 		return false;
