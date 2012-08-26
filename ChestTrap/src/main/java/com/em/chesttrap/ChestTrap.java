@@ -93,7 +93,7 @@ public class ChestTrap extends JavaPlugin {
 				sender.sendMessage(ChatColor.RED + "This " + block.getType().toString().toLowerCase() + "is not in the list : " + getBlockTypesAsString());
 				return true;
 			}
-			
+
 			// Already a chestTrap
 			if (this.chestMap.containsKey(block.getLocation())) {
 				ChestTrapContent content = this.chestMap.get(block.getLocation());
@@ -122,7 +122,7 @@ public class ChestTrap extends JavaPlugin {
 				this.chestMap.put(block.getLocation(), new ChestTrapContent(ih.getInventory(), sortS));
 				saveDatas();
 
-				sender.sendMessage(ChatColor.GREEN + "Chesttrap created ("+this.chestMap.get(block.getLocation()).getSortLabel()+")");
+				sender.sendMessage(ChatColor.GREEN + "Chesttrap created (" + this.chestMap.get(block.getLocation()).getSortLabel() + ")");
 			}
 
 		} catch (ClassCastException e) {
