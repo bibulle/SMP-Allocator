@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -114,7 +115,7 @@ public class AllocatorListener implements Listener {
 
 		// No Input-Container (get dropped items)
 		if ((inputContainer == null) || (inputContainer.getInventory() == null)) {
-			Location inputLocation = b.getLocation().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
+			Location inputLocation = alLst.get(alLst.size() - 1).getLocation().clone().add(0.5D + dx, 0.5D + dy, 0.5D + dz);
 			inputItems = AllocatorInput.getRandomItemFromDropped(b.getWorld(), inputLocation, alLst, thePlugin);
 
 			// Input-Container
@@ -128,9 +129,10 @@ public class AllocatorListener implements Listener {
 
 		// // No Output-Container (get dropped items)
 		if (outputContainer == null) {
-		 Location outputLocation = b.getLocation().add(0.5D - dx, 0.5D - dy, 0.5D - dz);
+			
+		 Location outputLocation = alLst.get(0).getLocation().clone().add(0.5D - dx, 0.5D - dy, 0.5D - dz);
 			AllocatorOutput.outputItemToDropped(inputItems, b.getWorld(), outputLocation, alLst.get(0), thePlugin);
-
+			
 			// Output-Container
 		} else {
 			if (outputContainer instanceof Furnace) {
