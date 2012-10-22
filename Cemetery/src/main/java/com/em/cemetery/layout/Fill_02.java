@@ -1,6 +1,5 @@
 package com.em.cemetery.layout;
 
-import org.bukkit.Material;
 
 public class Fill_02 extends Fill {
 
