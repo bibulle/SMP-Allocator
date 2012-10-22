@@ -1,0 +1,12 @@
+name: Cemetery
+main: com.em.cemetery.Cemetery
+version: 0.6
+commands:
+ cemetery:
+  description: Defines an cemetery.
+  usage: Unknown command. Type "help" for help.
+  aliases: ce
+permissions:
+ cemetery.create:
+  description: Grants the ability to use /cemetery.
+  default: op
