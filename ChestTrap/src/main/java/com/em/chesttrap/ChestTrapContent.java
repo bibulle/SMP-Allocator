@@ -11,6 +11,9 @@ public class ChestTrapContent {
 	// Sort for this chesttrap
 	private SortType sort = SortType.NONE;
 
+	// Sort for this chesttrap
+	private DispatchType dispatch = DispatchType.NONE;
+
 	// list of item in the inventory
 	private HashMap<Material, Integer> inventoryContent = new HashMap<Material, Integer>();
 
@@ -22,7 +25,7 @@ public class ChestTrapContent {
 		this.inventoryContent = inventoryContent;
 	}
 
-	public ChestTrapContent(Inventory inventory, String sortS) {
+	public ChestTrapContent(Inventory inventory, String propertieS) {
 
 		for (ItemStack itemStack : inventory) {
 			if (itemStack == null) {
@@ -39,10 +42,7 @@ public class ChestTrapContent {
 
 		}
 
-		try {
-			sort = SortType.valueOf(sortS);
-		} catch (IllegalArgumentException e) {
-		}
+		setProperties(propertieS);
 
 	}
 
@@ -113,25 +113,65 @@ public class ChestTrapContent {
 		this.sort = sort;
 	}
 
-	public void setSort(String sortS) {
-		try {
-			setSort(SortType.valueOf(sortS));
-		} catch (IllegalArgumentException e) {
+	public DispatchType getDispatch() {
+		return dispatch;
+	}
+
+	public void setDispatch(DispatchType dispatch) {
+		this.dispatch = dispatch;
+	}
+
+	public void setProperties(String propertieS) {
+		String[] split = propertieS.split(" ");
+
+		for (int i = 0; i < split.length; i++) {
+			String s = split[i].toUpperCase();
+			try {
+				setSort(SortType.valueOf(s));
+			} catch (IllegalArgumentException e1) {
+				try {
+					setDispatch(DispatchType.valueOf(s));
+				} catch (IllegalArgumentException e2) {
+				}
+			}
 		}
+		
 	}
 
 	String getSortLabel() {
-		String sorterS = "Sort : "+getSort();
-		getSort();
-		if (getSort() == SortType.NONE) {
-			sorterS = "No sort";
+		String sorterS = "No sort";
+		if (getSort() != SortType.NONE) {
+			sorterS = "Sort : "+getSort();
 		}
 		return sorterS;
+	}
+
+	String getDispatchLabel() {
+		String dispatchS = "No dispatch";
+		if (getDispatch() != DispatchType.NONE) {
+			dispatchS = "Dispatch : "+getDispatch();
+		}
+		return dispatchS;
 	}
 
 	enum SortType {
 		NONE, 
 		SIMPLE, 
+		//LINE, 
+		//COL
+		;
+
+		public String toString() {
+			if (this == NONE) {
+				return "";
+			} else {
+				return super.toString();
+			}
+		};
+	}
+	enum DispatchType {
+		NONE, 
+		UP, 
 		//LINE, 
 		//COL
 		;

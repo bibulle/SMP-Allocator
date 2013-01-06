@@ -5,17 +5,16 @@
   <version>0.6.1-SNAPSHOT</version>
   
   <repositories>
-     <repository>
-         <id>repobo-rel</id>
-         <name>repo.bukkit.org Releases</name>
-         <url>http://repo.bukkit.org/content/repositories/releases/</url>
-     </repository>
+	<repository>
+		<id>bukkit-repo</id>
+		<url>http://repo.bukkit.org/content/repositories/releases/</url>
+	</repository>
   </repositories>
   <dependencies>
   	<dependency>
   		<groupId>org.bukkit</groupId>
   		<artifactId>bukkit</artifactId>
-  		<version>1.2.5-R4.0</version>
+  		<version>1.4.6-R0.2</version>
   	</dependency>
   </dependencies>
 </project>

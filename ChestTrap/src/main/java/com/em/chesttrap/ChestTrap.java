@@ -47,7 +47,7 @@ public class ChestTrap extends JavaPlugin {
 		// Construct the data
 		Map<String, String> chestMapS = new HashMap<String, String>();
 		for (Location l : this.chestMap.keySet()) {
-			chestMapS.put(convertLocation(l), this.chestMap.get(l).getSort().toString());
+			chestMapS.put(convertLocation(l), this.chestMap.get(l).getSort().toString()+" "+this.chestMap.get(l).getDispatch().toString());
 		}
 		String chests = new Yaml().dump(chestMapS);
 
@@ -67,13 +67,13 @@ public class ChestTrap extends JavaPlugin {
 		HashMap<String, String> chestMapS = (HashMap<String, String>) new Yaml().loadAs(getConfig().getString("data", "{}"), HashMap.class);
 		for (String s : chestMapS.keySet()) {
 			Location l = convertString(s);
-			String sortS = chestMapS.get(s);
+			String propertiesS = chestMapS.get(s);
 
 			BlockState blockState = l.getBlock().getState();
 			if (blockState instanceof InventoryHolder) {
 				InventoryHolder ih = (InventoryHolder) blockState;
 
-				this.chestMap.put(l, new ChestTrapContent(ih.getInventory(), sortS));
+				this.chestMap.put(l, new ChestTrapContent(ih.getInventory(), propertiesS));
 			}
 		}
 
@@ -99,13 +99,12 @@ public class ChestTrap extends JavaPlugin {
 				ChestTrapContent content = this.chestMap.get(block.getLocation());
 
 				// Change "sort" if needed
-				String sortS = "";
-				if (args.length != 0) {
-					sortS = args[0].toUpperCase();
+				for (int i = 0; i < args.length; i++) {
+					content.setProperties(args[i]);
+					
 				}
-				content.setSort(sortS);
 
-				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap " + ChatColor.GREEN + "(" + content.getSortLabel() + ", "
+				sender.sendMessage(ChatColor.RED + "That " + block.getType().toString().toLowerCase() + " is already a chesttrap " + ChatColor.GREEN + "(" + content.getSortLabel() + ", " + content.getDispatchLabel() + ", "
 						+ content.contentToText() + ")");
 				return true;
 			}
@@ -122,7 +121,7 @@ public class ChestTrap extends JavaPlugin {
 				this.chestMap.put(block.getLocation(), new ChestTrapContent(ih.getInventory(), sortS));
 				saveDatas();
 
-				sender.sendMessage(ChatColor.GREEN + "Chesttrap created (" + this.chestMap.get(block.getLocation()).getSortLabel() + ")");
+				sender.sendMessage(ChatColor.GREEN + "Chesttrap created (" + this.chestMap.get(block.getLocation()).getSortLabel() + ", " + this.chestMap.get(block.getLocation()).getDispatchLabel() + ")");
 			}
 
 		} catch (ClassCastException e) {

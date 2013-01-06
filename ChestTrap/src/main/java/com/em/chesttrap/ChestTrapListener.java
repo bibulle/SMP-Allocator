@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -26,6 +27,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import com.em.chesttrap.ChestTrapContent.DispatchType;
 import com.em.chesttrap.ChestTrapContent.SortType;
 
 public class ChestTrapListener implements Listener {
@@ -144,12 +146,79 @@ public class ChestTrapListener implements Listener {
 		if (blockState != null) {
 			Block b = blockState.getBlock();
 
-			boolean changed = this.thePlugin.chestMap.containsKey(b.getLocation()) && this.thePlugin.chestMap.get(b.getLocation()).changeInventory(event.getInventory());
-			// System.out.println("================== MyInventoryModifiedEvent 4");
-			if (changed) {
-				// System.out.println("================== MyInventoryModifiedEvent 5");
+			ChestTrapContent chestTrapContent = this.thePlugin.chestMap.get(b.getLocation());
+			if (chestTrapContent == null) {
+				return;
+			}
 
-				ChestTrapContent chestTrapContent = this.thePlugin.chestMap.get(b.getLocation());
+			// Just try to dispatch
+			boolean aDispatchOccur = false;
+			ChestTrapContent targetChestTrapContent = null;
+			InventoryHolder targetInventoryHolder = null;
+			switch (chestTrapContent.getDispatch()) {
+			case UP:
+				targetChestTrapContent = this.thePlugin.chestMap.get(b.getLocation().add(0, 1, 0));
+				BlockState bs = b.getRelative(BlockFace.UP).getState();
+				if (bs instanceof InventoryHolder) {
+					targetInventoryHolder = (InventoryHolder) bs;
+				}
+				break;
+			default:
+				break;
+			}
+			if (targetInventoryHolder != null) {
+
+				for (int i = 0; i < targetInventoryHolder.getInventory().getContents().length; i++) {
+					ItemStack targetIs = targetInventoryHolder.getInventory().getContents()[i];
+					if (targetIs == null) {
+						for (int j = 0; j < ih.getInventory().getContents().length; j++) {
+							ItemStack sourceIs = ih.getInventory().getContents()[j];
+							if (sourceIs != null) {
+								targetIs = sourceIs;
+								ih.getInventory().clear(j);
+								aDispatchOccur = true;
+								break;
+							}
+						}
+					}
+					if ((targetIs != null) && (targetIs.getAmount() < targetIs.getMaxStackSize())) {
+						for (int j = 0; j < ih.getInventory().getContents().length; j++) {
+							ItemStack sourceIs = ih.getInventory().getContents()[j];
+							if ((sourceIs != null) && (sourceIs.isSimilar(targetIs))) {
+								int count = Math.min(sourceIs.getAmount(), targetIs.getMaxStackSize() - targetIs.getAmount());
+								targetIs.setAmount(targetIs.getAmount() + count);
+								if (count == sourceIs.getAmount()) {
+									ih.getInventory().clear(j);
+								} else {
+									sourceIs.setAmount(sourceIs.getAmount() - count);
+								}
+								aDispatchOccur = true;
+								if (targetIs.getAmount() == targetIs.getMaxStackSize()) {
+									break;
+								}
+							}
+						}
+					}
+
+					targetInventoryHolder.getInventory().setItem(i, targetIs);
+				}
+				// if we did something... send event
+				if (aDispatchOccur && (targetChestTrapContent != null)) {
+					final InventoryHolder ihf = targetInventoryHolder;
+					this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
+						public void run() {
+							Bukkit.getServer().getPluginManager().callEvent(new MyInventoryModifiedEvent(ihf.getInventory()));
+						}
+					}, 5L);
+				}
+				// System.out.println(ih);
+				// System.out.println(targetInventoryHolder);
+			}
+
+			boolean changed = chestTrapContent.changeInventory(event.getInventory());
+			// System.out.println("================== MyInventoryModifiedEvent 4");
+			if (changed || aDispatchOccur) {
+				// System.out.println("================== MyInventoryModifiedEvent 5");
 
 				// Inventory change, set on power !!!!
 				List<Block> arrayTmp = new ArrayList<Block>();
@@ -171,9 +240,7 @@ public class ChestTrapListener implements Listener {
 				for (Block block : array) {
 					final Block blockf = block;
 
-					// Send an event (for others mod)
-					// BlockRedstoneEvent newEvent = new BlockRedstoneEvent(block, 0, 15);
-					// Bukkit.getServer().getPluginManager().callEvent(newEvent);
+					// Send a redstone event (for others mod)
 					this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
 						public void run() {
 							BlockRedstoneEvent newEvent = new BlockRedstoneEvent(blockf, 0, 15);
@@ -200,6 +267,29 @@ public class ChestTrapListener implements Listener {
 							}
 						}, 6L);
 
+					}
+
+					// if it's a chestrap with dispatch.. send event
+					ChestTrapContent chestTrap = this.thePlugin.chestMap.get(blockf.getLocation());
+					if (chestTrap != null) {
+						switch (chestTrap.getDispatch()) {
+						case UP:
+							if (b.getRelative(BlockFace.DOWN).equals(blockf)) {
+								this.thePlugin.getServer().getScheduler().scheduleSyncDelayedTask(this.thePlugin, new Runnable() {
+									public void run() {
+										BlockState bs = blockf.getState();
+										if (bs instanceof InventoryHolder) {
+											InventoryHolder ih = (InventoryHolder) bs;
+											Bukkit.getServer().getPluginManager().callEvent(new MyInventoryModifiedEvent(ih.getInventory()));
+										}
+									}
+								}, 5L);
+							}
+							break;
+
+						default:
+							break;
+						}
 					}
 				}
 
